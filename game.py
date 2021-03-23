@@ -277,9 +277,9 @@ example.setHex("b4", 2)
 example.draw()
 '''
 
-w = 5
-b = 5
 def adjacencyTest():
+	w = 5
+	b = 5
 	for i in range(0, 4 + w * b):
 		os.system("clear")
 		print("Hex " + str(i))
