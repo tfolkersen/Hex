@@ -37,8 +37,9 @@ class State:
 		self.bchars = [cBlue + alphabet[i] + cWhite for i in range(0, wdist)]
 		self.wchars = [cRed + str(i) + cWhite for i in range(1, bdist + 1)]
 		self.labels = self.bchars[::-1] + [" "] + self.wchars
-		self.num = 0
-		self.result = 0
+
+		self.cacheNum = 0
+		self.cacheResult = 0
 
 		self.top = [4 + 0 + bdist * i for i in range(wdist)]
 		self.bottom = [4 + bdist - 1 + bdist * i for i in range(wdist)]
@@ -47,43 +48,25 @@ class State:
 
 		self.edges = [self.top, self.right, self.bottom, self.left]	
 
-
-		#UL, UR, DR, DL
-
-		#print("top")
-		#print(top)
-		#print("")
-
-		#print("bottom")
-		#print(bottom)
-		#print("")
-
-		#print("left")
-		#print(left)
-		#print("")
-
-		#print("right")
-		#print(right)
-		#print("")
-
 	def result(self):
-		if self.result == -1:
-		#Path for black (from 0 to 2)
-		#Path for white (from 1 to 3)
+		return 0
+		if self.cacheResult == -1:
+			#Path for black (from 0 to 2)
+			#Path for white (from 1 to 3)
 			pass
 
-		return self.result
+		return self.cacheResult
 
 	def number(self):
-		if self.num == -1:
+		if self.cacheNum == -1:
 			num = 0
 			tiles = self.wdist * self.bdist
 			for i in range(4, len(self.board)):
 				v = self.board[i]
 				num += 1 << (i - 4) + (v - 1) * tiles if v != 0 else 0
-			self.num = num
+			self.cacheNum = num
 
-		return self.num
+		return self.cacheNum
 
 	def __bwToIndex(self, bCoord, wCoord):
 		wdist = self.wdist
@@ -105,7 +88,7 @@ class State:
 
 
 	def randomize(self):
-		self.num = -1
+		self.cacheNum = -1
 		for i in range(4, len(self.board)):
 			self.board[i] = random.randint(0, 2)
 
@@ -188,21 +171,9 @@ class State:
 
 		return neighbours
 
-
-#3, 3
-
-#3, 2 #up left
-#3, 4 #down right
-
-#4, 3 #up right
-#2, 3 #down left
-
-#4, 2 #up
-#2, 4 #down
-
 	def randomMove(self, value):
-		self.num = -1
-		self.result = -1
+		self.cacheNum = -1
+		self.cacheResult = -1
 		choices = []
 		for i in range(4, len(self.board)):
 			if self.board[i] == 0:
@@ -211,13 +182,13 @@ class State:
 		self.board[choices[index]] = value
 
 	def testfill(self):
-		self.num = -1
+		self.cacheNum = -1
 		for i in range(0, len(self.board)):
 			self.board[i] = i
 
 	#1,1 or a,1
 	def setHex2(self, bCoord, wCoord, value):
-		self.num = -1
+		self.cacheNum = -1
 
 		index = self.__bwToIndex(bCoord, wCoord)
 
@@ -228,7 +199,7 @@ class State:
 
 	#a1
 	def setHex(self, coord, value):
-		self.num = -1
+		self.cacheNum = -1
 		b = re.search("[a-zA-Z]+", coord).group(0)
 		w = re.search("[0-9]+", coord).group(0)
 		return self.setHex2(b, w, value)
@@ -280,8 +251,6 @@ class State:
 		endOffset = rows - centerRow
 		print("  " * endOffset, end = "")
 		print(self.labels[-1])
-			
-		
 		
 '''
 	  bdist
@@ -308,26 +277,31 @@ example.setHex("b4", 2)
 example.draw()
 '''
 
+def adjacencyTest():
+	for i in range(0, 4 + 5 * 5):
+		os.system("clear")
+		print("Hex " + str(i))
+		s = State(5, 5)
+		s.board[i] = 1
+		adj = s.adjacent(i)
+		print(adj)
+		for a in adj:
+			s.board[a] = 2
+		s.draw()
 
+		colors = [cWhite] * 4
+		for j in adj:
+			if j >= 0 and j <= 3:
+				colors[j] = cRed
 
-for i in range(0, 4 + 5 * 5):
-	os.system("clear")
-	print("Hex " + str(i))
-	s = State(5, 5)
-	s.board[i] = 1
-	adj = s.adjacent(i)
-	print(adj)
-	for a in adj:
-		s.board[a] = 2
-	s.draw()
+		print(colors[0] + "/" + colors[1] + "\\")
+		print(colors[3] + "\\" + colors[2] + "/")
+		print(cWhite)
 
-	d = input("[Press enter]")
+		d = input("[Press enter]")
 
-
-
-
+adjacencyTest()
 exit(0)
-
 
 ############################################################ The actual game
 
@@ -337,7 +311,7 @@ player = 1
 def nextPlayer(current):
 	return 1 if current == 2 else 2
 
-while game.result == 0:
+while game.result() == 0:
 	os.system("clear")
 	game.draw()
 	
