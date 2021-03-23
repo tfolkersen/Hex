@@ -21,7 +21,7 @@ print("\033[0m")
 
 def playerToColor(id):
 	if id == 0:
-		return cWhite + "⬣ "
+		return cWhite + "⬣ " + cWhite
 	if id == 1:
 		return cBlue + "⬣ " + cWhite
 	if id == 2:
@@ -37,6 +37,9 @@ class State:
 		self.bchars = [cBlue + alphabet[i] + cWhite for i in range(0, wdist)]
 		self.wchars = [cRed + str(i) + cWhite for i in range(1, bdist + 1)]
 		self.labels = self.bchars[::-1] + [" "] + self.wchars
+
+		self.labelLengths = [len(alphabet[i]) for i in range(0, wdist)][::-1] + [1] +\
+			[len(str(i)) for i in range(1, bdist + 1)]
 
 		self.cacheNum = 0
 		self.cacheResult = 0
@@ -71,7 +74,6 @@ class State:
 				if board[n] == player:
 					todo.append(n)
 		return False
-
 
 	def result(self):
 		if self.cacheResult == -1:
@@ -212,26 +214,23 @@ class State:
 		for i in range(0, len(self.board)):
 			self.board[i] = i
 
-	#1,1 or a,1
-	def setHex2(self, bCoord, wCoord, value):
-		index = self.__bwToIndex(bCoord, wCoord, silent = True)
-
+	def setHexIndex(self, index, value):
 		if index < 0 or index >= len(self.board):
 			return False
-
-		self.cacheNum = -1
-		self.cacheResult = -1
-
-
+	
 		if self.board[index] == 0:
 			self.board[index] = value
+			self.cacheNum = -1
+			self.cacheResult = -1
 			return True
 		return False
 
-	def setHex(self, coord, value):
-		self.cacheNum = -1
-		self.cacheResult = -1
+	#1,1 or a,1
+	def setHex2(self, bCoord, wCoord, value):
+		index = self.__bwToIndex(bCoord, wCoord, silent = True)
+		return self.setHexIndex(index, value)
 
+	def setHex(self, coord, value):
 		coord = coord.lower()
 		formatSearch = re.search("([a-z])([0-9]+)", coord)
 		matchesFormat = formatSearch is not None and formatSearch.span() == (0, len(coord))
@@ -243,7 +242,6 @@ class State:
 		w = re.search("[0-9]+", coord).group(0)
 
 		return self.setHex2(b, w, value)
-
 
 	def draw(self):
 		print(self.board)
@@ -272,12 +270,17 @@ class State:
 
 			row = [base + dist * j for j in range(0, width)]
 
+			label = self.labels[i + 1]
+
 			#print spaces
 			offset -= 2
-			print("  " * offset, end = "")
+			offset *= 2
+			offset += (1 - self.labelLengths[i + 1])
+
+			print(" " * offset, end = "")
 
 			#print label
-			print(self.labels[i + 1], end="    ")
+			print(label, end="    ")
 
 			#print tiles
 			for j in range(len(row)):
@@ -363,6 +366,21 @@ def searchTest():
 	
 #searchTest()
 #exit(0)
+
+
+### Player
+
+class BasicPlayer:
+	def __init__(self, playerNumber):
+		self.playerNumber = playerNumber
+
+	def makePlay(self, state, time):
+		pass
+
+
+	# action = best action according to
+	# val(a) + c * sqrt(ln(t) / vis(a))
+
 
 ############################################################ The actual game
 
