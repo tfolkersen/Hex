@@ -39,6 +39,9 @@ class State:
 		self.labels = self.bchars[::-1] + [" "] + self.wchars
 		self.num = 0
 
+	def terminal(self):
+		return False
+
 	def number(self):
 		if self.num == -1:
 			num = 0
@@ -76,18 +79,20 @@ class State:
 		wCoord -= 1
 
 		if (bCoord < 0 or bCoord >= wdist) or (wCoord < 0 or wCoord >= bdist):
-			print("lol")
 			raise "Bad setHex2 coordinates: (" + str(bCoord) + ", " + str(wCoord) + ")"
 
 		index = bCoord * bdist + wCoord + 4
-		self.board[index] = value
+		if self.board[index] == 0:
+			self.board[index] = value
+			return True
+		return False
 
 	#a1
 	def setHex(self, coord, value):
 		self.num = -1
 		b = re.search("[a-zA-Z]+", coord).group(0)
 		w = re.search("[0-9]+", coord).group(0)
-		self.setHex2(b, w, value)
+		return self.setHex2(b, w, value)
 
 
 	def draw(self):
@@ -165,5 +170,33 @@ example.setHex("b4", 2)
 example.draw()
 '''
 
-s = State(5, 5)
-s.setHex("e5", 2)
+
+
+game = State(5, 5)
+player = 1
+
+def nextPlayer(current):
+	return 1 if current == 2 else 2
+
+
+
+while not game.terminal():
+	os.system("clear")
+	game.draw()
+	
+	if player == 1:
+		action = input("Enter player 1 action: ")
+		while not game.setHex(action, 1):
+			action = input("Can't place hex there, pick an open hex: ")
+	elif player == 2:
+		action = input("Enter player 2 action: ")
+		while not game.setHex(action, 2):
+			action = input("Can't place hex there, pick an open hex: ")
+
+	player = nextPlayer(player)
+
+
+	
+
+
+
