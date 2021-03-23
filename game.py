@@ -2,6 +2,8 @@ import random
 import re
 import time
 import os
+import copy
+import math
 
 '''
 ░·▓
@@ -50,6 +52,9 @@ class State:
 		self.right = [4 + (wdist - 1) * bdist + i for i in range(bdist)]
 
 		self.edges = [self.top, self.right, self.bottom, self.left]	
+
+	def clone(self):
+		return copy.deepcopy(self)
 
 	def pathTest(self, start, end, player):
 		board = self.board
@@ -370,12 +375,89 @@ def searchTest():
 
 ### Player
 
+def argmax(values):
+	bestValue = values[0]
+	bestIndices = [0]
+
+	for i in range(1, len(values)):
+		v = values[i]
+
+		if v == bestValue:
+			bestIndices.append(i)
+		if v > bestValue:
+			bestValue = v
+			bestIndices = [i]
+
+	return bestIndices[random.randint(0, len(bestIndices) - 1)]
+
+
 class BasicPlayer:
 	def __init__(self, playerNumber):
 		self.playerNumber = playerNumber
+		#visits, value
+		self.stateInfo = {}
+		self.expConst = 1.0
+		self.rollouts = 0
 
-	def makePlay(self, state, time):
-		pass
+	def makePlay(self, state, timeStep):
+		timeLimit = 30.0
+		moves = [i for i in range(4, len(state.board)) if state.board[i] == 0]
+
+		states = []
+		visits = []
+		values = []
+		for m in moves:
+			s = state.clone()
+			s.setHexIndex(m, self.playerNumber)
+			states.append(s)
+	
+			number = s.number()
+			if number in self.stateInfo.keys():
+				info = self.stateInfo[number]
+				visits.append(info[0])	
+				values.append(info[1])
+			else:
+				visits.append(0)
+				values.append(0)
+
+		heuristic = []
+		for i in range(len(states)):
+			if visits[i] == 0:
+				heuristic.append(0)
+			else:
+				h = values[i] + self.expConst * math.sqrt(math.log(timeStep) / visits[i])
+				heuristic.append(h)
+
+		end = time.time() + timeLimit
+		self.rollouts = 0
+		while time.time() < end:
+			i = argmax(heuristic)
+
+			outcome = self.rollout(states[i])
+			v = 1 if outcome == self.playerNumber else -1
+			visits[i] += 1
+			values[i] = values[i] + (1.0 / visits[i]) * (v - visits[i])
+
+			heuristic[i] = values[i] + self.expConst * math.sqrt(math.log(timeStep) / visits[i])
+			self.rollouts += 1
+
+		for i in range(len(states)):
+			s = states[i]
+			num = s.number()
+			self.stateInfo[num] = [visits[i], values[i]]
+
+		best = argmax(values)
+		move = moves[best]
+
+		state.setHexIndex(move, self.playerNumber)
+
+	def rollout(self, state):
+		s = state.clone()
+		toPlay = nextPlayer(self.playerNumber)
+		while s.result() == 0:
+			s.randomMove(toPlay)
+			toPlay = nextPlayer(toPlay)
+		return s.result()
 
 
 	# action = best action according to
@@ -385,6 +467,10 @@ class BasicPlayer:
 ############################################################ The actual game
 
 
+def nextPlayer(current):
+	return 1 if current == 2 else 2
+
+
 while True:
 	os.system("clear")
 
@@ -392,13 +478,15 @@ while True:
 	bdist = int(input("Enter distance for black (integer): "))
 
 	game = State(wdist, bdist)
+	opponent = BasicPlayer(2)
+	opponentStep = 1
 
 	player = 1
-	def nextPlayer(current):
-		return 1 if current == 2 else 2
+
 
 	os.system("clear")
 	game.draw()
+	print("\nPrevious rollouts: " + str(opponent.rollouts))
 
 	while game.result() == 0:
 		if player == 1:
@@ -411,12 +499,14 @@ while True:
 	#			action = input("Can't place hex there, pick an open hex: ")
 
 		if player == 2:
-			game.randomMove(2)
+			opponent.makePlay(game, opponentStep)
+			opponentStep += 1
 
 		player = nextPlayer(player)
 
 		os.system("clear")
 		game.draw()
+		print("\nPrevious rollouts: " + str(opponent.rollouts))
 	
 	print("Player " + str(game.result()) + " wins!")
 	input("[Press enter to play again]")
