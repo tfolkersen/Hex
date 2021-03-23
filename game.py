@@ -48,13 +48,38 @@ class State:
 
 		self.edges = [self.top, self.right, self.bottom, self.left]	
 
-	def result(self):
-		return 0
-		if self.cacheResult == -1:
-			#Path for black (from 0 to 2)
-			#Path for white (from 1 to 3)
-			pass
+	def pathTest(self, start, end, player):
+		board = self.board
 
+		if board[start] != player or board[end] != player:
+			return False
+
+		todo = [start]
+		closed = [False] * len(board)
+
+		while todo:
+			v = todo.pop()
+			closed[v] = True
+			neighbours = self.adjacent(v)
+			for n in neighbours:
+				if closed[n]:
+					continue
+				if n == end:
+					if board[n] == player:
+						return True
+					return False
+				if board[n] == player:
+					todo.append(n)
+		return False
+
+
+	def result(self):
+		if self.cacheResult == -1:
+			self.cacheResult = 0
+			if self.pathTest(0, 2, 1): #Path for black (from 0 to 2)
+				self.cacheResult = 1
+			elif self.pathTest(1, 3, 2): #Path for white (from 1 to 3)
+				self.cacheResult = 2
 		return self.cacheResult
 
 	def number(self):
@@ -189,6 +214,7 @@ class State:
 	#1,1 or a,1
 	def setHex2(self, bCoord, wCoord, value):
 		self.cacheNum = -1
+		self.cacheResult = -1
 
 		index = self.__bwToIndex(bCoord, wCoord)
 
@@ -200,6 +226,7 @@ class State:
 	#a1
 	def setHex(self, coord, value):
 		self.cacheNum = -1
+		self.cacheResult = -1
 		b = re.search("[a-zA-Z]+", coord).group(0)
 		w = re.search("[0-9]+", coord).group(0)
 		return self.setHex2(b, w, value)
@@ -300,33 +327,65 @@ def adjacencyTest():
 		print(colors[3] + "\\" + colors[2] + "/")
 		print(cWhite)
 
-		d = input("[Press enter]")
+		input("[Press enter]")
 
 #adjacencyTest()
 #exit(0)
 
+
+def searchTest():
+	w = 5
+	b = 5
+	while True:
+		os.system("clear")
+		s = State(w, b)
+		s.randomize()
+		s.draw()
+	
+		print("1 win: " + str(s.pathTest(0, 2, 1)))
+		print("2 win: " + str(s.pathTest(1, 3, 2)))
+
+		input("[Press enter to generate another board]")
+	
+#searchTest()
+#exit(0)
+
 ############################################################ The actual game
 
-game = State(5, 5)
 
-player = 1
-def nextPlayer(current):
-	return 1 if current == 2 else 2
+while True:
+	os.system("clear")
 
-while game.result() == 0:
+	wdist = int(input("Enter distance for white (integer): "))
+	bdist = int(input("Enter distance for black (integer): "))
+
+	game = State(wdist, bdist)
+
+	player = 1
+	def nextPlayer(current):
+		return 1 if current == 2 else 2
+
 	os.system("clear")
 	game.draw()
-	
-	if player == 1:
-		action = input("Enter player 1 action: ")
-		while not game.setHex(action, 1):
-			action = input("Can't place hex there, pick an open hex: ")
-#	elif player == 2:
-#		action = input("Enter player 2 action: ")
-#		while not game.setHex(action, 2):
-#			action = input("Can't place hex there, pick an open hex: ")
 
-	if player == 2:
-		game.randomMove(2)
-	player = nextPlayer(player)
+	while game.result() == 0:
+		if player == 1:
+			action = input("Enter player 1 action: ")
+			while not game.setHex(action, 1):
+				action = input("Can't place hex there, pick an open hex: ")
+	#	elif player == 2:
+	#		action = input("Enter player 2 action: ")
+	#		while not game.setHex(action, 2):
+	#			action = input("Can't place hex there, pick an open hex: ")
+
+		if player == 2:
+			game.randomMove(2)
+
+		player = nextPlayer(player)
+
+		os.system("clear")
+		game.draw()
+	
+	print("Player " + str(game.result()) + " wins!")
+	input("[Press enter to play again]")
 
