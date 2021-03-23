@@ -407,8 +407,10 @@ class BasicPlayer:
 		self.expConst = 0.01
 		self.rollouts = 0
 		self.timeLimit = 5.0
+		self.increment = True
 
 	def makePlay(self, state, timeStep):
+		timeStep = 1
 		timeLimit = self.timeLimit
 		moves = [i for i in range(4, len(state.board)) if state.board[i] == 0]
 
@@ -454,6 +456,7 @@ class BasicPlayer:
 
 			#heuristic[i] = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / visits[i])
 			self.rollouts += 1
+			timeStep += 1 if self.increment else 0
 			for i in range(len(states)):
 				h = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / (visits[i] + 1))
 				heuristic[i] = h
@@ -495,7 +498,7 @@ def nextPlayer(current):
 ############################################################
 
 a1 = 1.0
-a2 = 0.01
+a2 = 1.0
 gameNo = 1
 learn = False
 
@@ -503,20 +506,23 @@ w1 = 0
 w2 = 0
 
 while True:
-	wdist = 4
-	bdist = 4
+	wdist = 5
+	bdist = 5
 
 	game = State(wdist, bdist)
 
 	p1 = BasicPlayer(1)
-	p2 = BasicPlayer(2)
-	limit = 0.1
+	p2 = RandomPlayer(2)
+	limit = 0.05
 	p1.timeLimit = limit
 	p2.timeLimit = limit
 	p1.expConst = a1
 	p2.expConst = a2
 	p1s = 1
 	p2s = 1
+
+	p1.increment = True
+	p2.increment = False
 
 	player = random.randint(1, 2)
 
@@ -559,7 +565,6 @@ while True:
 
 
 
-
 ############################################################
 
 
@@ -571,6 +576,7 @@ while True:
 
 	game = State(wdist, bdist)
 	opponent = BasicPlayer(2)
+	opponent.timeLimit = 10.0
 	opponentStep = 1
 
 	player = 1
