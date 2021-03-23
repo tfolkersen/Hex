@@ -277,11 +277,13 @@ example.setHex("b4", 2)
 example.draw()
 '''
 
+w = 5
+b = 5
 def adjacencyTest():
-	for i in range(0, 4 + 5 * 5):
+	for i in range(0, 4 + w * b):
 		os.system("clear")
 		print("Hex " + str(i))
-		s = State(5, 5)
+		s = State(w, b)
 		s.board[i] = 1
 		adj = s.adjacent(i)
 		print(adj)
@@ -300,8 +302,8 @@ def adjacencyTest():
 
 		d = input("[Press enter]")
 
-adjacencyTest()
-exit(0)
+#adjacencyTest()
+#exit(0)
 
 ############################################################ The actual game
 
@@ -327,10 +329,4 @@ while game.result() == 0:
 	if player == 2:
 		game.randomMove(2)
 	player = nextPlayer(player)
-
-
-
-	
-
-
 
