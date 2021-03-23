@@ -37,21 +37,37 @@ class State:
 		self.bchars = [cBlue + alphabet[i] + cWhite for i in range(0, wdist)]
 		self.wchars = [cRed + str(i) + cWhite for i in range(1, bdist + 1)]
 		self.labels = self.bchars[::-1] + [" "] + self.wchars
+		self.num = 0
+
+	def number(self):
+		if self.num == -1:
+			num = 0
+			tiles = self.wdist * self.bdist
+			for i in range(4, len(self.board)):
+				v = self.board[i]
+				num += 1 << (i - 4) + (v - 1) * tiles if v != 0 else 0
+			self.num = num
+
+		return self.num
 
 	def randomize(self):
+		self.num = -1
 		for i in range(4, len(self.board)):
 			self.board[i] = random.randint(0, 2)
 
 	def testfill(self):
+		self.num = -1
 		for i in range(0, len(self.board)):
 			self.board[i] = i
 
 	#1,1 or a,1
 	def setHex2(self, bCoord, wCoord, value):
+		self.num = -1
+
 		wdist = self.wdist
 		bdist = self.bdist
 
-		if bCoord is str and bCoord.isalpha():
+		if type(bCoord) is str and bCoord.isalpha():
 			bCoord = ord(bCoord.lower()) - ord("a")
 		else:
 			bCoord -= 1
@@ -68,6 +84,7 @@ class State:
 
 	#a1
 	def setHex(self, coord, value):
+		self.num = -1
 		b = re.search("[a-zA-Z]+", coord).group(0)
 		w = re.search("[0-9]+", coord).group(0)
 		self.setHex2(b, w, value)
@@ -148,4 +165,5 @@ example.setHex("b4", 2)
 example.draw()
 '''
 
-
+s = State(5, 5)
+s.setHex("e5", 2)
