@@ -494,8 +494,8 @@ def nextPlayer(current):
 
 ############################################################
 
-a1 = 0.01
-a2 = 1.0
+a1 = 1.0
+a2 = 0.01
 gameNo = 1
 learn = False
 
@@ -503,14 +503,14 @@ w1 = 0
 w2 = 0
 
 while True:
-	wdist = 5
-	bdist = 5
+	wdist = 4
+	bdist = 4
 
 	game = State(wdist, bdist)
 
 	p1 = BasicPlayer(1)
-	p2 = RandomPlayer(2)
-	limit = 0.04
+	p2 = BasicPlayer(2)
+	limit = 0.1
 	p1.timeLimit = limit
 	p2.timeLimit = limit
 	p1.expConst = a1
