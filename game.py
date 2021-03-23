@@ -58,6 +58,15 @@ class State:
 		for i in range(4, len(self.board)):
 			self.board[i] = random.randint(0, 2)
 
+	def randomMove(self, value):
+		self.num = -1
+		choices = []
+		for i in range(4, len(self.board)):
+			if self.board[i] == 0:
+				choices.append(i)
+		index = random.randint(0, len(choices) - 1)
+		self.board[choices[index]] = value
+
 	def testfill(self):
 		self.num = -1
 		for i in range(0, len(self.board)):
@@ -171,14 +180,13 @@ example.draw()
 '''
 
 
+############################################################ The actual game
 
 game = State(5, 5)
-player = 1
 
+player = 1
 def nextPlayer(current):
 	return 1 if current == 2 else 2
-
-
 
 while not game.terminal():
 	os.system("clear")
@@ -188,12 +196,15 @@ while not game.terminal():
 		action = input("Enter player 1 action: ")
 		while not game.setHex(action, 1):
 			action = input("Can't place hex there, pick an open hex: ")
-	elif player == 2:
-		action = input("Enter player 2 action: ")
-		while not game.setHex(action, 2):
-			action = input("Can't place hex there, pick an open hex: ")
+#	elif player == 2:
+#		action = input("Enter player 2 action: ")
+#		while not game.setHex(action, 2):
+#			action = input("Can't place hex there, pick an open hex: ")
 
+	if player == 2:
+		game.randomMove(2)
 	player = nextPlayer(player)
+
 
 
 	
