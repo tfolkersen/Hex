@@ -93,7 +93,7 @@ class State:
 
 		return self.cacheNum
 
-	def __bwToIndex(self, bCoord, wCoord):
+	def __bwToIndex(self, bCoord, wCoord, silent = False):
 		wdist = self.wdist
 		bdist = self.bdist
 
@@ -105,8 +105,9 @@ class State:
 		wCoord = int(wCoord)
 		wCoord -= 1
 
-		if (bCoord < 0 or bCoord >= wdist) or (wCoord < 0 or wCoord >= bdist):
-			raise "Bad bwToIndex coordinates: (" + str(bCoord) + ", " + str(wCoord) + ")"
+		if not silent:
+			if (bCoord < 0 or bCoord >= wdist) or (wCoord < 0 or wCoord >= bdist):
+				raise "Bad bwToIndex coordinates: (" + str(bCoord) + ", " + str(wCoord) + ")"
 
 		index = bCoord * bdist + wCoord + 4
 		return index
@@ -213,23 +214,36 @@ class State:
 
 	#1,1 or a,1
 	def setHex2(self, bCoord, wCoord, value):
+		index = self.__bwToIndex(bCoord, wCoord, silent = True)
+
+		if index < 0 or index >= len(self.board):
+			return False
+
 		self.cacheNum = -1
 		self.cacheResult = -1
 
-		index = self.__bwToIndex(bCoord, wCoord)
 
 		if self.board[index] == 0:
 			self.board[index] = value
 			return True
 		return False
 
-	#a1
 	def setHex(self, coord, value):
 		self.cacheNum = -1
 		self.cacheResult = -1
-		b = re.search("[a-zA-Z]+", coord).group(0)
+
+		coord = coord.lower()
+		formatSearch = re.search("([a-z])([0-9]+)", coord)
+		matchesFormat = formatSearch is not None and formatSearch.span() == (0, len(coord))
+
+		if not matchesFormat:
+			return False
+
+		b = re.search("[a-z]", coord).group(0)
 		w = re.search("[0-9]+", coord).group(0)
+
 		return self.setHex2(b, w, value)
+
 
 	def draw(self):
 		print(self.board)
