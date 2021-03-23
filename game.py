@@ -391,16 +391,25 @@ def argmax(values):
 	return bestIndices[random.randint(0, len(bestIndices) - 1)]
 
 
+
+class RandomPlayer():
+	def __init__(self, playerNumber):
+		self.playerNumber = playerNumber
+	
+	def makePlay(self, state, timeStep):
+		state.randomMove(self.playerNumber)
+
 class BasicPlayer:
 	def __init__(self, playerNumber):
 		self.playerNumber = playerNumber
 		#visits, value
 		self.stateInfo = {}
-		self.expConst = 1.0
+		self.expConst = 0.01
 		self.rollouts = 0
+		self.timeLimit = 5.0
 
 	def makePlay(self, state, timeStep):
-		timeLimit = 30.0
+		timeLimit = self.timeLimit
 		moves = [i for i in range(4, len(state.board)) if state.board[i] == 0]
 
 		states = []
@@ -422,11 +431,16 @@ class BasicPlayer:
 
 		heuristic = []
 		for i in range(len(states)):
-			if visits[i] == 0:
-				heuristic.append(0)
-			else:
-				h = values[i] + self.expConst * math.sqrt(math.log(timeStep) / visits[i])
-				heuristic.append(h)
+			#if visits[i] == 0:
+			#	heuristic.append(0)
+			#else:
+			#	h = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / visits[i])
+			#	heuristic.append(h)
+
+			h = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / (visits[i] + 1))
+			heuristic.append(h)
+
+
 
 		end = time.time() + timeLimit
 		self.rollouts = 0
@@ -436,10 +450,15 @@ class BasicPlayer:
 			outcome = self.rollout(states[i])
 			v = 1 if outcome == self.playerNumber else -1
 			visits[i] += 1
-			values[i] = values[i] + (1.0 / visits[i]) * (v - visits[i])
+			values[i] = values[i] + (1.0 / visits[i]) * (v - values[i])
 
-			heuristic[i] = values[i] + self.expConst * math.sqrt(math.log(timeStep) / visits[i])
+			#heuristic[i] = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / visits[i])
 			self.rollouts += 1
+			for i in range(len(states)):
+				h = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / (visits[i] + 1))
+				heuristic[i] = h
+
+
 
 		for i in range(len(states)):
 			s = states[i]
@@ -469,6 +488,79 @@ class BasicPlayer:
 
 def nextPlayer(current):
 	return 1 if current == 2 else 2
+
+
+
+
+############################################################
+
+a1 = 0.01
+a2 = 1.0
+gameNo = 1
+learn = False
+
+w1 = 0
+w2 = 0
+
+while True:
+	wdist = 5
+	bdist = 5
+
+	game = State(wdist, bdist)
+
+	p1 = BasicPlayer(1)
+	p2 = RandomPlayer(2)
+	limit = 0.04
+	p1.timeLimit = limit
+	p2.timeLimit = limit
+	p1.expConst = a1
+	p2.expConst = a2
+	p1s = 1
+	p2s = 1
+
+	player = random.randint(1, 2)
+
+	os.system("clear")
+	game.draw()
+	print("Game number " + str(gameNo))
+	print("(" + str(a1) + " " + str(a2) + ")")
+	print("P1/P2: " + str(w1) + " " + str(w2))
+
+	while game.result() == 0:
+		if player == 1:
+			p1.makePlay(game, p1s)
+			p1s += 1
+		if player == 2:
+			p2.makePlay(game, p2s)
+			p2s += 1
+
+		player = nextPlayer(player)
+
+		os.system("clear")
+		game.draw()
+		print("Game number " + str(gameNo))
+		print("(" + str(a1) + " " + str(a2) + ")")
+		print("P1/P2: " + str(w1) + " " + str(w2))
+
+	res = game.result()
+	if res == 1:
+		w1 += 1
+	else:
+		w2 += 1
+
+	if learn:
+		if res == 1:
+			a2 = a2 + 0.03 * (a1 - a2)
+		else:
+			a1 = a1 + 0.03 * (a2 - a1)
+
+	gameNo += 1
+
+
+
+
+
+############################################################
 
 
 while True:
