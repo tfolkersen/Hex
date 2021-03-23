@@ -38,9 +38,41 @@ class State:
 		self.wchars = [cRed + str(i) + cWhite for i in range(1, bdist + 1)]
 		self.labels = self.bchars[::-1] + [" "] + self.wchars
 		self.num = 0
+		self.result = 0
 
-	def terminal(self):
-		return False
+		self.top = [4 + 0 + bdist * i for i in range(wdist)]
+		self.bottom = [4 + bdist - 1 + bdist * i for i in range(wdist)]
+		self.left = [4 + i for i in range(bdist)]
+		self.right = [4 + (wdist - 1) * bdist + i for i in range(bdist)]
+
+		self.edges = [self.top, self.right, self.bottom, self.left]	
+
+
+		#UL, UR, DR, DL
+
+		#print("top")
+		#print(top)
+		#print("")
+
+		#print("bottom")
+		#print(bottom)
+		#print("")
+
+		#print("left")
+		#print(left)
+		#print("")
+
+		#print("right")
+		#print(right)
+		#print("")
+
+	def result(self):
+		if self.result == -1:
+		#Path for black (from 0 to 2)
+		#Path for white (from 1 to 3)
+			pass
+
+		return self.result
 
 	def number(self):
 		if self.num == -1:
@@ -53,13 +85,124 @@ class State:
 
 		return self.num
 
+	def __bwToIndex(self, bCoord, wCoord):
+		wdist = self.wdist
+		bdist = self.bdist
+
+		if type(bCoord) is str and bCoord.isalpha():
+			bCoord = ord(bCoord.lower()) - ord("a")
+		else:
+			bCoord -= 1
+
+		wCoord = int(wCoord)
+		wCoord -= 1
+
+		if (bCoord < 0 or bCoord >= wdist) or (wCoord < 0 or wCoord >= bdist):
+			raise "Bad bwToIndex coordinates: (" + str(bCoord) + ", " + str(wCoord) + ")"
+
+		index = bCoord * bdist + wCoord + 4
+		return index
+
+
 	def randomize(self):
 		self.num = -1
 		for i in range(4, len(self.board)):
 			self.board[i] = random.randint(0, 2)
 
+	#given a board index, return adjacent board indices
+	#	b + 1 ---> index + bdist
+	#	w + 1 ---> index + 1
+	def adjacent(self, index):
+		bdist = self.bdist
+		wdist = self.wdist
+
+		if index < 4:
+			return self.edges[index]
+
+		neighbours = set()
+	
+		low = 4
+		high = len(self.board) - 1
+
+		bottom = bdist - 1 + 4
+		top = (wdist - 1) * bdist + 4
+
+		#up left (good)
+		n = index - 1
+		if ((index - 4) % bdist) - 1 < 0:
+			n = 0
+		#print("UL " + str(n))
+		neighbours.add(n)
+
+		#down right (good)
+		n = index + 1
+		if ((index - 4) % bdist) + 1 >= bdist:
+			n = 2
+		#print("DR " + str(n))
+		neighbours.add(n)
+
+		#up right (good)
+		n = index + bdist
+		if (n > high):
+			n = 1
+		#print("UR " + str(n))
+		neighbours.add(n)
+
+		#down left (good)
+		n = index - bdist
+		if (n < low):
+			n = 3
+		#print("DL " + str(n))
+		neighbours.add(n)
+
+		#up
+		edge = False
+		if index in self.edges[0]:
+			#print("up -- 0")
+			edge = True
+			neighbours.add(0)
+		if index in self.edges[1]:
+			#print("up -- 1")
+			edge = True
+			neighbours.add(1)
+		if not edge:
+			n = index + bdist - 1
+			#print("up -- " + str(n))
+			neighbours.add(n)
+
+		#down
+		edge = False
+		if index in self.edges[2]:
+			#print("down -- 2")
+			edge = True
+			neighbours.add(2)
+		if index in self.edges[3]:
+			#print("down -- 3")
+			edge = True
+			neighbours.add(3)
+		if not edge:
+			n = index - bdist + 1
+			#print("down -- " + str(n))
+			neighbours.add(n)
+
+
+		return neighbours
+
+
+#3, 3
+
+#3, 2 #up left
+#3, 4 #down right
+
+#4, 3 #up right
+#2, 3 #down left
+
+#4, 2 #up
+#2, 4 #down
+
 	def randomMove(self, value):
 		self.num = -1
+		self.result = -1
 		choices = []
 		for i in range(4, len(self.board)):
 			if self.board[i] == 0:
@@ -76,21 +219,8 @@ class State:
 	def setHex2(self, bCoord, wCoord, value):
 		self.num = -1
 
-		wdist = self.wdist
-		bdist = self.bdist
+		index = self.__bwToIndex(bCoord, wCoord)
 
-		if type(bCoord) is str and bCoord.isalpha():
-			bCoord = ord(bCoord.lower()) - ord("a")
-		else:
-			bCoord -= 1
-
-		wCoord = int(wCoord)
-		wCoord -= 1
-
-		if (bCoord < 0 or bCoord >= wdist) or (wCoord < 0 or wCoord >= bdist):
-			raise "Bad setHex2 coordinates: (" + str(bCoord) + ", " + str(wCoord) + ")"
-
-		index = bCoord * bdist + wCoord + 4
 		if self.board[index] == 0:
 			self.board[index] = value
 			return True
@@ -102,7 +232,6 @@ class State:
 		b = re.search("[a-zA-Z]+", coord).group(0)
 		w = re.search("[0-9]+", coord).group(0)
 		return self.setHex2(b, w, value)
-
 
 	def draw(self):
 		print(self.board)
@@ -180,6 +309,26 @@ example.draw()
 '''
 
 
+
+for i in range(0, 4 + 5 * 5):
+	os.system("clear")
+	print("Hex " + str(i))
+	s = State(5, 5)
+	s.board[i] = 1
+	adj = s.adjacent(i)
+	print(adj)
+	for a in adj:
+		s.board[a] = 2
+	s.draw()
+
+	d = input("[Press enter]")
+
+
+
+
+exit(0)
+
+
 ############################################################ The actual game
 
 game = State(5, 5)
@@ -188,7 +337,7 @@ player = 1
 def nextPlayer(current):
 	return 1 if current == 2 else 2
 
-while not game.terminal():
+while game.result == 0:
 	os.system("clear")
 	game.draw()
 	
