@@ -4,6 +4,7 @@ import time
 import os
 import copy
 import math
+import json
 
 '''
 ░·▓
@@ -408,9 +409,24 @@ class BasicPlayer:
 		self.rollouts = 0
 		self.timeLimit = 5.0
 		self.increment = True
+		self.timeStep = 1
+
+
+	def save(self, filename):
+		f = open(filename, "w")
+		f.write(json.dumps([self.timeStep, self.stateInfo]))
+		f.close()
+
+	def load(self, filename):
+		f = open(filename, "r")
+		l = f.read()
+		data = json.loads(l)
+		self.timeStep = data[0]
+		self.stateInfo = data[1]
+		f.close()
+	
 
 	def makePlay(self, state, timeStep):
-		timeStep = 1
 		timeLimit = self.timeLimit
 		moves = [i for i in range(4, len(state.board)) if state.board[i] == 0]
 
@@ -439,10 +455,8 @@ class BasicPlayer:
 			#	h = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / visits[i])
 			#	heuristic.append(h)
 
-			h = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / (visits[i] + 1))
+			h = values[i] + self.expConst * math.sqrt(math.log(float(self.timeStep)) / (visits[i] + 1))
 			heuristic.append(h)
-
-
 
 		end = time.time() + timeLimit
 		self.rollouts = 0
@@ -456,12 +470,10 @@ class BasicPlayer:
 
 			#heuristic[i] = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / visits[i])
 			self.rollouts += 1
-			timeStep += 1 if self.increment else 0
+			self.timeStep += 1 if self.increment else 0
 			for i in range(len(states)):
-				h = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / (visits[i] + 1))
+				h = values[i] + self.expConst * math.sqrt(math.log(float(self.timeStep)) / (visits[i] + 1))
 				heuristic[i] = h
-
-
 
 		for i in range(len(states)):
 			s = states[i]
@@ -497,23 +509,31 @@ def nextPlayer(current):
 
 ############################################################
 
-a1 = 1.0
-a2 = 1.0
+a1 = 0.01
+a2 = 0.01
 gameNo = 1
 learn = False
 
 w1 = 0
 w2 = 0
 
+
+
+p1 = BasicPlayer(1)
+p2 = BasicPlayer(2)
+
+
 while True:
-	wdist = 5
-	bdist = 5
+	wdist = 4
+	bdist = 4
 
 	game = State(wdist, bdist)
 
 	p1 = BasicPlayer(1)
+	p1.timeStep = 1
 	p2 = RandomPlayer(2)
-	limit = 0.05
+	p2.rollouts = 0
+	limit = 0.01
 	p1.timeLimit = limit
 	p2.timeLimit = limit
 	p1.expConst = a1
@@ -522,7 +542,7 @@ while True:
 	p2s = 1
 
 	p1.increment = True
-	p2.increment = False
+	p2.increment = True
 
 	player = random.randint(1, 2)
 
@@ -531,6 +551,8 @@ while True:
 	print("Game number " + str(gameNo))
 	print("(" + str(a1) + " " + str(a2) + ")")
 	print("P1/P2: " + str(w1) + " " + str(w2))
+	print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
+	print("Entries: " + str(len(p1.stateInfo.keys())))
 
 	while game.result() == 0:
 		if player == 1:
@@ -547,6 +569,8 @@ while True:
 		print("Game number " + str(gameNo))
 		print("(" + str(a1) + " " + str(a2) + ")")
 		print("P1/P2: " + str(w1) + " " + str(w2))
+		print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
+		print("Entries: " + str(len(p1.stateInfo.keys())))
 
 	res = game.result()
 	if res == 1:
@@ -561,6 +585,13 @@ while True:
 			a1 = a1 + 0.03 * (a2 - a1)
 
 	gameNo += 1
+
+	if gameNo == 2000:
+		exit(0)
+
+	#if gameNo == 20:
+	#	p1.save("p1.dat")
+	#	exit(0)
 
 
 
