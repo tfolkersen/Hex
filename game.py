@@ -623,7 +623,8 @@ class BasicPlayer2:
 			h = values[-1] - self.expConst * math.sqrt(math.log(float(self.timeStep)) / (visits[-1] + 1))
 			heuristic.append(h)
 
-		best = argmax(heuristic)
+		#best = argmax(heuristic)
+		best = argmax(values)
 		move = moves[best]
 
 		state.setHexIndex(move, self.playerNumber)
@@ -746,8 +747,13 @@ p2 = BasicPlayer(2)
 p1 = HumanPlayer(1)
 p2 = BasicPlayer2(2)
 
+p1 = BasicPlayer2(1)
+
 perc = 0
 percs = []
+
+col1 = ""
+col2 = ""
 
 while True:
 	wdist = 4
@@ -755,7 +761,7 @@ while True:
 
 	game = State(wdist, bdist)
 
-	p1 = BasicPlayer2(1)
+	#p1 = BasicPlayer2(1)
 	p1.softmax = True
 	p2 = BasicPlayer(2)
 	#p2.rollouts = 0
@@ -774,12 +780,18 @@ while True:
 
 	player = random.randint(1, 2)
 	#player = 1
+	if player == 1:
+		col1 = cBlue
+		col2 = cRed
+	else:
+		col1 = cRed
+		col2 = cBlue
 
 	os.system("clear")
 	game.draw()
 	print("Game number " + str(gameNo))
 	print("(" + str(a1) + " " + str(a2) + ")")
-	print("P1/P2: " + str(w1) + " " + str(w2))
+	print(col1 + "P1" + cWhite + "/" + col2 + "P2" + cWhite + ": " + str(w1) + " " + str(w2))
 	print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
 	print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
 	perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
@@ -799,7 +811,7 @@ while True:
 		game.draw()
 		print("Game number " + str(gameNo))
 		print("(" + str(a1) + " " + str(a2) + ")")
-		print("P1/P2: " + str(w1) + " " + str(w2))
+		print(col1 + "P1" + cWhite + "/" + col2 + "P2" + cWhite + ": " + str(w1) + " " + str(w2))
 		print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
 		print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
 		perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
