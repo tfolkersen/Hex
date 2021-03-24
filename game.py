@@ -644,6 +644,18 @@ class BasicPlayer2:
 		return [reward, values[i]]
 
 
+class HumanPlayer:
+	def __init__(self, playerNumber):
+		self.playerNumber = playerNumber
+		self.rollouts = 0
+		self.stateInfo = {}
+
+	def makePlay(self, state, timeStep):
+		action = input("Enter player " + str(self.playerNumber) + " action: ")
+		while not state.setHex(action, self.playerNumber):
+			action = input("Can't place hex there, pick an open hex: ")
+
+		
 
 
 
@@ -657,6 +669,7 @@ def nextPlayer(current):
 
 
 ############################################################
+
 
 a1 = 0.01
 a2 = 0.01
@@ -672,9 +685,10 @@ p1 = BasicPlayer2(1)
 p2 = BasicPlayer(2)
 
 
-p1 = BasicPlayer2(1)
-p2 = BasicPlayer(2)
+p1 = HumanPlayer(1)
+p2 = BasicPlayer2(2)
 
+perc = 0
 
 while True:
 	wdist = 4
@@ -682,12 +696,12 @@ while True:
 
 	game = State(wdist, bdist)
 
-	#p1 = BasicPlayer2(1)
-	#p2 = RandomPlayer(2)
+	p1 = BasicPlayer2(1)
+	p2 = BasicPlayer(2)
 	#p2.rollouts = 0
 	#p2.stateInfo = {}
 
-	limit = 0.4
+	limit = 4.0
 	p1.timeLimit = limit
 	p2.timeLimit = limit
 	p1.expConst = a1
@@ -699,6 +713,7 @@ while True:
 	p2.increment = True
 
 	player = random.randint(1, 2)
+	#player = 1
 
 	os.system("clear")
 	game.draw()
@@ -707,6 +722,8 @@ while True:
 	print("P1/P2: " + str(w1) + " " + str(w2))
 	print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
 	print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
+	perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
+	print("% of 0s: " + str(perc))
 
 	while game.result() == 0:
 		if player == 1:
@@ -725,6 +742,8 @@ while True:
 		print("P1/P2: " + str(w1) + " " + str(w2))
 		print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
 		print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
+		perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
+		print("% of 0s: " + str(perc))
 
 	res = game.result()
 	if res == 1:
@@ -740,8 +759,10 @@ while True:
 
 	gameNo += 1
 
-	if gameNo == 120:
-		p1.save("p1.dat")
+	perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
+
+	if gameNo == 30 + 1:
+		#p1.save("p1.dat")
 		exit(0)
 
 	#if gameNo == 20:
@@ -754,15 +775,28 @@ while True:
 ############################################################
 
 
+
+opponent = BasicPlayer2(1)
+opponent.expConst = 0.01
+
+
+previous = (0, 0)
+
 while True:
 	os.system("clear")
 
 	wdist = int(input("Enter distance for white (integer): "))
 	bdist = int(input("Enter distance for black (integer): "))
 
+	if (wdist, bdist) != previous:
+		opponent = BasicPlayer(1)
+		opponent.expConst = 0.01
+
+	previous = (wdist, bdist)
+
 	game = State(wdist, bdist)
-	opponent = BasicPlayer(2)
-	opponent.timeLimit = 10.0
+	#opponent = BasicPlayer2(2)
+	opponent.timeLimit = 4.0
 	opponentStep = 1
 
 	player = 1
@@ -771,9 +805,10 @@ while True:
 	os.system("clear")
 	game.draw()
 	print("\nPrevious rollouts: " + str(opponent.rollouts))
+	print("Entries: " + str(len(opponent.stateInfo.keys())))
 
 	while game.result() == 0:
-		if player == 1:
+		if player == 2:
 			action = input("Enter player 1 action: ")
 			while not game.setHex(action, 1):
 				action = input("Can't place hex there, pick an open hex: ")
@@ -782,7 +817,7 @@ while True:
 	#		while not game.setHex(action, 2):
 	#			action = input("Can't place hex there, pick an open hex: ")
 
-		if player == 2:
+		if player == 1:
 			opponent.makePlay(game, opponentStep)
 			opponentStep += 1
 
@@ -791,6 +826,7 @@ while True:
 		os.system("clear")
 		game.draw()
 		print("\nPrevious rollouts: " + str(opponent.rollouts))
+		print("Entries: " + str(len(opponent.stateInfo.keys())))
 	
 	print("Player " + str(game.result()) + " wins!")
 	input("[Press enter to play again]")
