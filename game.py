@@ -400,8 +400,6 @@ def softmax(values):
 
 	pi.sort(key = lambda x : x[0])
 
-	print(pi)
-
 	r = random.random()
 
 	i = 0
@@ -423,8 +421,6 @@ def softmin(values):
 
 	l = len(piNormal)
 	pi = [(piNormal[i][0], piNormal[l - i - 1][1]) for i in range(l)] 
-
-	print(pi)
 
 	r = random.random()
 
@@ -671,8 +667,10 @@ class BasicPlayer2:
 			h = sgn * values[i] + self.expConst * math.sqrt(math.log(float(self.timeStep)) / (visits[i] + 1))
 			heuristic[i] = h
 
-		i = argmax(heuristic)
-		#i = argmax(
+		if self.softmax:
+			i = softmax(heuristic)
+		else:
+			i = argmax(heuristic)
 
 		ret = self.rollout(states[i], nextPlayer(player))
 		
@@ -740,6 +738,7 @@ p1 = HumanPlayer(1)
 p2 = BasicPlayer2(2)
 
 perc = 0
+percs = []
 
 while True:
 	wdist = 4
@@ -748,6 +747,7 @@ while True:
 	game = State(wdist, bdist)
 
 	p1 = BasicPlayer2(1)
+	p1.softmax = True
 	p2 = BasicPlayer(2)
 	#p2.rollouts = 0
 	#p2.stateInfo = {}
@@ -811,10 +811,12 @@ while True:
 	gameNo += 1
 
 	perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
+	percs.append(perc)
 
-	if gameNo == 30 + 1:
+	if gameNo == 100 + 1:
 		#p1.save("p1.dat")
 		print("P1/P2: " + str(w1) + " " + str(w2))
+		print(sum(percs) / len(percs))
 		exit(0)
 
 	#if gameNo == 20:
