@@ -743,7 +743,7 @@ class Node:
 	def ucb(self, relativePlayer):
 		v = self.value(relativePlayer)
 
-		h = v + math.sqrt(2 * math.log(self.parent.visits + 1) / (self.visits + 1))
+		h = v + 0.01 * math.sqrt(math.log(self.parent.visits + 1) / (self.visits + 1))
 		return h
 
 	def value(self, relativePlayer):
@@ -772,12 +772,14 @@ class MCTSPlayer:
 		self.root = None
 		self.timeLimit = 0.0
 		self.rollouts = 0
+		self.discardCount = 0
 
 	def goto(self, state):
 		#no root or no children
 		if self.root is None or self.root.children is None:
 			n = Node(state, self.playerNumber)
 			self.root = n
+			self.discardCount += 1
 			return
 
 		#try to find node in children
@@ -865,6 +867,7 @@ class MCTSPlayer:
 				self.message += " state numbers didn't match"
 
 		self.goto(state)
+		self.message += " discards: " + str(self.discardCount)
 				
 
 
@@ -932,11 +935,12 @@ while True:
 
 
 	#p1.softmax = True
-	p2 = BasicPlayer(2)
+	p2 = RandomPlayer(2)
+	#p2.softmax = True
 	p2.rollouts = 0
 	p2.stateInfo = {}
 
-	limit = 0.5
+	limit = 4.0
 	p1.timeLimit = limit
 	p2.timeLimit = limit
 	p1.expConst = a1
