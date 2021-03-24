@@ -598,7 +598,9 @@ class BasicPlayer2:
 		moves = [i for i in range(4, len(state.board)) if state.board[i] == 0]
 
 		states = []
+		visits = []
 		values = []
+		heuristic = []
 		for m in moves:
 			s = state.clone()
 			s.setHexIndex(m, self.playerNumber)
@@ -607,14 +609,21 @@ class BasicPlayer2:
 			number = s.number()
 			if number in self.stateInfo.keys():
 				info = self.stateInfo[number]
+				visits.append(info[0])
 				values.append(info[1])
+				
 			else:
 				o = s.result()
 				v = 0
 				v = 1 if o == self.playerNumber else (0 if o == 0 else -1)
+				visits.append(0)
 				values.append(v)
 
-		best = argmax(values)
+
+			h = values[-1] - self.expConst * math.sqrt(math.log(float(self.timeStep)) / (visits[-1] + 1))
+			heuristic.append(h)
+
+		best = argmax(heuristic)
 		move = moves[best]
 
 		state.setHexIndex(move, self.playerNumber)
