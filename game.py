@@ -391,6 +391,22 @@ def argmax(values):
 
 	return bestIndices[random.randint(0, len(bestIndices) - 1)]
 
+def argmin(values):
+	bestValue = values[0]
+	bestIndices = [0]
+
+	for i in range(1, len(values)):
+		v = values[i]
+
+		if v == bestValue:
+			bestIndices.append(i)
+		if v < bestValue:
+			bestValue = v
+			bestIndices = [i]
+
+	return bestIndices[random.randint(0, len(bestIndices) - 1)]
+
+
 
 
 class RandomPlayer():
@@ -409,7 +425,7 @@ class BasicPlayer:
 		self.rollouts = 0
 		self.timeLimit = 5.0
 		self.increment = True
-		self.timeStep = 1
+		self.timeStep = 0
 
 
 	def save(self, filename):
@@ -427,8 +443,10 @@ class BasicPlayer:
 	
 
 	def makePlay(self, state, timeStep):
+		self.timeStep += 1
 		timeLimit = self.timeLimit
 		moves = [i for i in range(4, len(state.board)) if state.board[i] == 0]
+
 
 		states = []
 		visits = []
@@ -470,7 +488,7 @@ class BasicPlayer:
 
 			#heuristic[i] = values[i] + self.expConst * math.sqrt(math.log(float(timeStep)) / visits[i])
 			self.rollouts += 1
-			self.timeStep += 1 if self.increment else 0
+			#self.timeStep += 1 if self.increment else 0
 			for i in range(len(states)):
 				h = values[i] + self.expConst * math.sqrt(math.log(float(self.timeStep)) / (visits[i] + 1))
 				heuristic[i] = h
@@ -497,6 +515,137 @@ class BasicPlayer:
 	# action = best action according to
 	# val(a) + c * sqrt(ln(t) / vis(a))
 
+class BasicPlayer2:
+	def __init__(self, playerNumber):
+		self.playerNumber = playerNumber
+		#visits, value
+		self.stateInfo = {}
+		self.expConst = 0.01
+		self.rollouts = 0
+		self.timeLimit = 5.0
+		self.increment = True
+		self.timeStep = 0
+		self.gamma = 0.9
+
+
+	def save(self, filename):
+		f = open(filename, "w")
+		f.write(json.dumps([self.timeStep, self.stateInfo]))
+		f.close()
+
+	def load(self, filename):
+		f = open(filename, "r")
+		l = f.read()
+		data = json.loads(l)
+		self.timeStep = data[0]
+		self.stateInfo = data[1]
+		f.close()
+	
+
+	def makePlay(self, state, timeStep):
+		self.rollouts = 0
+		self.timeStep += 1
+		self.endTime = time.time() + self.timeLimit
+
+		while time.time() < self.endTime:
+			self.rollout(state, self.playerNumber)
+
+		moves = [i for i in range(4, len(state.board)) if state.board[i] == 0]
+
+		states = []
+		values = []
+		for m in moves:
+			s = state.clone()
+			s.setHexIndex(m, self.playerNumber)
+			states.append(s)
+	
+			number = s.number()
+			if number in self.stateInfo.keys():
+				info = self.stateInfo[number]
+				values.append(info[1])
+			else:
+				o = s.result()
+				v = 0
+				v = 1 if o == self.playerNumber else (0 if o == 0 else -1)
+				values.append(v)
+
+		best = argmax(values)
+		move = moves[best]
+
+		state.setHexIndex(move, self.playerNumber)
+
+	def rollout(self, state, player):
+		if time.time() > self.endTime:
+			return
+
+		if state.result() != 0:
+			v = 1 if state.result() == self.playerNumber else -1
+			num = state.number()
+			info = []
+			if num in self.stateInfo.keys():
+				info = self.stateInfo[num]
+			else:
+				info = [0, 0]
+
+			info[0] += 1
+			info[1] = v
+			self.stateInfo[num] = info
+
+			return [v, v]
+
+		moves = [i for i in range(4, len(state.board)) if state.board[i] == 0]
+
+		states = []
+		visits = []
+		values = []
+		for m in moves:
+			s = state.clone()
+			s.setHexIndex(m, player)
+			states.append(s)
+	
+			number = s.number()
+			if number in self.stateInfo.keys():
+				info = self.stateInfo[number]
+				visits.append(info[0])	
+				values.append(info[1])
+			else:
+				visits.append(0)
+				o = s.result()
+				v = 0
+				v = 1 if o == self.playerNumber else (0 if o == 0 else -1)
+				values.append(v)
+
+		heuristic = [0] * len(states)
+
+		for i in range(len(states)):
+			h = values[i] + self.expConst * math.sqrt(math.log(float(self.timeStep)) / (visits[i] + 1))
+			heuristic[i] = h
+
+		i = argmax(heuristic) if player == self.playerNumber else argmin(heuristic)
+
+		ret = self.rollout(states[i], nextPlayer(player))
+		
+		if ret is None:
+			return
+
+		reward, estimate = ret
+
+		visits[i] += 1
+		values[i] = values[i] + (1.0 / visits[i]) * (reward - values[i])
+
+		self.rollouts += 1
+		#self.timeStep += 1 if self.increment else 0
+
+		for i in range(len(states)):
+			s = states[i]
+			num = s.number()
+			self.stateInfo[num] = [visits[i], values[i]]
+
+		return [reward, values[i]]
+
+
+
+
 
 ############################################################ The actual game
 
@@ -519,7 +668,11 @@ w2 = 0
 
 
 
-p1 = BasicPlayer(1)
+p1 = BasicPlayer2(1)
+p2 = BasicPlayer(2)
+
+
+p1 = BasicPlayer2(1)
 p2 = BasicPlayer(2)
 
 
@@ -529,11 +682,12 @@ while True:
 
 	game = State(wdist, bdist)
 
-	p1 = BasicPlayer(1)
-	p1.timeStep = 1
-	p2 = RandomPlayer(2)
-	p2.rollouts = 0
-	limit = 0.01
+	#p1 = BasicPlayer2(1)
+	#p2 = RandomPlayer(2)
+	#p2.rollouts = 0
+	#p2.stateInfo = {}
+
+	limit = 0.4
 	p1.timeLimit = limit
 	p2.timeLimit = limit
 	p1.expConst = a1
@@ -552,7 +706,7 @@ while True:
 	print("(" + str(a1) + " " + str(a2) + ")")
 	print("P1/P2: " + str(w1) + " " + str(w2))
 	print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
-	print("Entries: " + str(len(p1.stateInfo.keys())))
+	print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
 
 	while game.result() == 0:
 		if player == 1:
@@ -570,7 +724,7 @@ while True:
 		print("(" + str(a1) + " " + str(a2) + ")")
 		print("P1/P2: " + str(w1) + " " + str(w2))
 		print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
-		print("Entries: " + str(len(p1.stateInfo.keys())))
+		print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
 
 	res = game.result()
 	if res == 1:
@@ -586,7 +740,8 @@ while True:
 
 	gameNo += 1
 
-	if gameNo == 2000:
+	if gameNo == 120:
+		p1.save("p1.dat")
 		exit(0)
 
 	#if gameNo == 20:
