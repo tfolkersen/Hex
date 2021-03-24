@@ -391,6 +391,54 @@ def argmax(values):
 
 	return bestIndices[random.randint(0, len(bestIndices) - 1)]
 
+def softmax(values):
+	e = [math.exp(v) for v in values]
+	s = sum(e)
+	p = [ev / s for ev in e]
+
+	pi = [(p[i], i) for i in range(len(p))]
+
+	pi.sort(key = lambda x : x[0])
+
+	print(pi)
+
+	r = random.random()
+
+	i = 0
+	while i < len(pi) - 1:
+		if r > pi[i][0]:
+			i += 1
+		else:
+			return pi[i][1]
+	return pi[i][1]
+
+
+def softmin(values):
+	e = [math.exp(v) for v in values]
+	s = sum(e)
+	p = [ev / s for ev in e]
+
+	piNormal = [(p[i], i) for i in range(len(p))]
+	piNormal.sort(key = lambda x : x[0])
+
+	l = len(piNormal)
+	pi = [(piNormal[i][0], piNormal[l - i - 1][1]) for i in range(l)] 
+
+	print(pi)
+
+	r = random.random()
+
+	i = 0
+	while i < len(pi) - 1:
+		if r > pi[i][0]:
+			i += 1
+		else:
+			return pi[i][1]
+	return pi[i][1]
+
+
+
+
 def argmin(values):
 	bestValue = values[0]
 	bestIndices = [0]
@@ -526,6 +574,7 @@ class BasicPlayer2:
 		self.increment = True
 		self.timeStep = 0
 		self.gamma = 0.9
+		self.softmax = True
 
 
 	def save(self, filename):
@@ -617,11 +666,13 @@ class BasicPlayer2:
 
 		heuristic = [0] * len(states)
 
+		sgn = -1 if player != self.playerNumber else 1
 		for i in range(len(states)):
-			h = values[i] + self.expConst * math.sqrt(math.log(float(self.timeStep)) / (visits[i] + 1))
+			h = sgn * values[i] + self.expConst * math.sqrt(math.log(float(self.timeStep)) / (visits[i] + 1))
 			heuristic[i] = h
 
-		i = argmax(heuristic) if player == self.playerNumber else argmin(heuristic)
+		i = argmax(heuristic)
+		#i = argmax(
 
 		ret = self.rollout(states[i], nextPlayer(player))
 		
@@ -763,6 +814,7 @@ while True:
 
 	if gameNo == 30 + 1:
 		#p1.save("p1.dat")
+		print("P1/P2: " + str(w1) + " " + str(w2))
 		exit(0)
 
 	#if gameNo == 20:
