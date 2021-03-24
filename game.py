@@ -714,6 +714,165 @@ class HumanPlayer:
 		while not state.setHex(action, self.playerNumber):
 			action = input("Can't place hex there, pick an open hex: ")
 
+class Node:
+	def __init__(self, state, player):
+		self.state = state.clone()
+		self.player = player
+		self.parent = None
+		self.children = None
+		self.moves = None
+		self.visits = 0
+		self.wins = 0
+		self.losses = 0
+	
+	def expandChildren(self):
+		if self.children is not None:
+			return
+
+		np = nextPlayer(self.player)
+		self.children = []
+		self.moves = [i for i in range(4, len(self.state.board)) if self.state.board[i] == 0]
+
+		for m in self.moves:
+			s = self.state.clone()
+			s.setHexIndex(m, self.player)
+			c = Node(s, np)
+			c.parent = self
+			self.children.append(c)
+
+	def ucb(self, relativePlayer):
+		v = self.value(relativePlayer)
+
+		h = v + math.sqrt(2 * math.log(self.parent.visits + 1) / (self.visits + 1))
+		return h
+
+	def value(self, relativePlayer):
+		w = 0
+		if relativePlayer == self.player:
+			w = self.wins
+		else:
+			w = self.losses
+
+		v = float(w) / self.visits if self.visits > 0 else 0
+		return v
+
+
+	def update(self, result):
+		self.visits += 1
+		
+		if self.player == result:
+			self.wins += 1
+		else:
+			self.losses += 1
+		
+
+class MCTSPlayer:
+	def __init__(self, playerNumber):
+		self.playerNumber = playerNumber
+		self.root = None
+		self.timeLimit = 0.0
+		self.rollouts = 0
+
+	def goto(self, state):
+		#no root or no children
+		if self.root is None or self.root.children is None:
+			n = Node(state, self.playerNumber)
+			self.root = n
+			return
+
+		#try to find node in children
+		number = state.number()
+		for c in self.root.children:
+			if c.state.number() == number:
+				
+				if c.state.board != state.board:
+					print("board mismatch")	
+					print(c.state.board)
+					print(state.board)
+					exit(0)
+
+				self.root = c
+				c.parent = None
+				return
+
+		print("failed to find number")
+		exit(0)
+
+	def makePlay(self, state, timeStep):
+		self.rollouts = 0
+
+		self.message = ""
+
+		#root is now given state
+		self.goto(state)
+
+		self.message += "OK " + str(state.number() == self.root.state.number())
+
+		
+
+		endTime = time.time() + self.timeLimit
+
+		while time.time() < endTime:
+			self.rollouts += 1
+			#traverse tree to find a leaf
+			stack = []
+			node = self.root
+
+			while True:
+				stack.append(node)
+
+				if node.children is None:
+					break
+
+				values = [c.ucb(self.playerNumber) for c in node.children]
+				bestIndex = argmax(values)
+
+				node = node.children[bestIndex]
+
+
+			#expand the leaf if applicable
+			outcome = node.state.result()
+			if outcome == 0:
+				node.expandChildren()
+				#pick a child and do simulation
+				node = node.children[random.randint(0, len(node.children) - 1)]
+				stack.append(node)
+
+				node.state.result()
+				s = node.state.clone()
+				p = node.player
+				while s.result() == 0:
+					s.randomMove(p)
+					p = nextPlayer(p)
+				outcome = s.result()
+
+
+			#update the whole stack
+			for i in range(0, len(stack), -1):
+				n = stack[i]
+				n.update(outcome)
+
+		#now pick move
+		values = [c.value(self.playerNumber) for c in self.root.children]
+		bestIndex = argmax(values)
+		bestMove = self.root.moves[bestIndex]
+
+		self.message += " best: " + str(bestMove)
+
+		if state.setHexIndex(bestMove, self.playerNumber) == False:
+			self.message = "Failed to set " + str(bestMove) + " -- was already " + str(state.board[bestMove])
+			if state.number() != self.root.state.number():
+				self.message += " state numbers didn't match"
+
+		self.goto(state)
+				
+
+
+
+		
+
+			
+
 		
 
 
@@ -755,19 +914,29 @@ percs = []
 col1 = ""
 col2 = ""
 
+p1 = MCTSPlayer(1)
+p1.message = None
+p1.rollouts = 0
+p1.stateInfo = {}
+
 while True:
 	wdist = 4
 	bdist = 4
 
 	game = State(wdist, bdist)
 
-	#p1 = BasicPlayer2(1)
-	p1.softmax = True
-	p2 = BasicPlayer(2)
-	#p2.rollouts = 0
-	#p2.stateInfo = {}
+	p1 = MCTSPlayer(1)
+	p1.message = None
+	p1.rollouts = 0
+	p1.stateInfo = {}
 
-	limit = 4.0
+
+	#p1.softmax = True
+	p2 = BasicPlayer(2)
+	p2.rollouts = 0
+	p2.stateInfo = {}
+
+	limit = 0.5
 	p1.timeLimit = limit
 	p2.timeLimit = limit
 	p1.expConst = a1
@@ -780,6 +949,7 @@ while True:
 
 	player = random.randint(1, 2)
 	#player = 1
+
 	if player == 1:
 		col1 = cBlue
 		col2 = cRed
@@ -796,9 +966,12 @@ while True:
 	print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
 	perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
 	print("% of 0s: " + str(perc))
+	print("Message: ", end="")
+	print(p1.message)
 
 	while game.result() == 0:
 		if player == 1:
+			#input("[Press enter]")
 			p1.makePlay(game, p1s)
 			p1s += 1
 		if player == 2:
@@ -816,6 +989,9 @@ while True:
 		print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
 		perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
 		print("% of 0s: " + str(perc))
+		print("Message: ", end="")
+		print(p1.message)
+
 
 	res = game.result()
 	if res == 1:
