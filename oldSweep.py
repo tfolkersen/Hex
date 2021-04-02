@@ -1,6 +1,7 @@
 			
 
 import random
+import cProfile
 import os
 
 from state import State
@@ -63,13 +64,22 @@ while True:
 
 
 	#p1.softmax = True
-	p2 = BasicPlayer2(2)
+	p2 = FastPlayer(2)
 	#p2.softmax = True
 	p2.rollouts = 0
 	p2.stateInfo = {}
 
-	limit = 0.1
-	gameCount = 100
+	p1.bootstrap = False
+	p2.bootstrap = False
+	p1.expConst = 0.01
+	p2.expConst = 0.01
+	p1.maximizeNonVisited = True
+	p2.maximizeNonVisited = False
+
+	#p2 = HumanPlayer(2)
+
+	limit = 0.4
+	gameCount = 500
 	p1.timeLimit = limit
 	p2.timeLimit = limit
 	p1.expConst = a1
@@ -105,6 +115,8 @@ while True:
 	while game.outcome() == 0:
 		if player == 1:
 			#input("[Press enter]")
+			#cProfile.run("p1.makePlay(game, p1s)")
+			#exit(0)
 			p1.makePlay(game, p1s)
 			p1s += 1
 		if player == 2:

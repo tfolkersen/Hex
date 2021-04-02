@@ -1,6 +1,7 @@
 from utils import *
 import random
 import copy
+import re
 
 stateHelper = {}
 
@@ -10,6 +11,10 @@ def numberAfterMove(stateNumber, tiles, index, value):
 	return num
 
 class State:
+
+	def __init__(self):
+		pass
+
 	def __init__(self, wdist = 5, bdist = 5):
 		self.board = [1, 2, 1, 2] + [0] * (bdist * wdist)
 		self.bdist = bdist
@@ -52,20 +57,35 @@ class State:
 
 		self.cacheNum = 0
 		self.cacheOutcome = 0
-		self.moves = -1
+		self.moveList = -1
 
 	def clone(self):
-		return copy.deepcopy(self)
+		#return copy.deepcopy(self)
+		#return copy.copy(self)
+
+		s = State()
+
+		s.board = list(self.board)
+		s.bdist = self.bdist
+		s.wdist = self.wdist
+		s.dims = self.dims
+
+		s.cacheNum = self.cacheNum
+		s.cacheOutcome = self.cacheOutcome
+		s.moveList = -1 if self.moveList == -1 else list(self.moveList)
+		return s
+
+
 
 	def _invalidateCache(self):
 		self.cacheNum = -1
 		self.cacheOutcome = -1
-		self.moves = -1
+		self.moveList = -1
 
 	def moves(self):
-		if self.moves == -1:
-			self.moves = tuple([i for i in range(4, len(self.board)) if self.board[i] == 0])
-		return self.moves
+		if self.moveList == -1:
+			self.moveList = tuple([i for i in range(4, len(self.board)) if self.board[i] == 0])
+		return self.moveList
 
 	#start and end are board indices
 	def pathTest(self, start, end, player):

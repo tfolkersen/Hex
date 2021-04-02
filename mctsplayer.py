@@ -19,7 +19,9 @@ class Node:
 
 		np = nextPlayer(self.player)
 		self.children = []
-		self.moves = [i for i in range(4, len(self.state.board)) if self.state.board[i] == 0]
+		#self.moves = [i for i in range(4, len(self.state.board)) if self.state.board[i] == 0]
+		self.moves = self.state.moves()
+
 
 		for m in self.moves:
 			s = self.state.clone()
@@ -37,9 +39,9 @@ class Node:
 	def value(self, relativePlayer):
 		w = 0
 		if relativePlayer == self.player:
-			w = self.wins
+			w = self.wins - self.losses
 		else:
-			w = self.losses
+			w = self.losses - self.wins
 
 		v = float(w) / self.visits if self.visits > 0 else 0
 		return v
@@ -96,12 +98,11 @@ class MCTSPlayer:
 		#root is now given state
 		self.goto(state)
 
-		self.message += "OK " + str(state.number() == self.root.state.number())
-
 		
 
 		endTime = time.time() + self.timeLimit
 
+		p = self.playerNumber
 		while time.time() < endTime:
 			self.rollouts += 1
 			#traverse tree to find a leaf
@@ -114,11 +115,11 @@ class MCTSPlayer:
 				if node.children is None:
 					break
 
-				values = [c.ucb(self.playerNumber) for c in node.children]
+				values = [c.ucb(p) for c in node.children]
 				bestIndex = argmax(values)
 
 				node = node.children[bestIndex]
-
+				p = nextPlayer(p)
 
 			#expand the leaf if applicable
 			outcome = node.state.outcome()

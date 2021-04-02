@@ -1,0 +1,4 @@
+FastPlayer with 3.0 bonus to non explored vs FastPlayer without
+both c = 0.01
+Time 0.1 per move
+Score 276 224

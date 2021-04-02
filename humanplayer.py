@@ -1,3 +1,4 @@
+
 class HumanPlayer:
 	def __init__(self, playerNumber):
 		self.playerNumber = playerNumber

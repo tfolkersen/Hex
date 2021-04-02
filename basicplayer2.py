@@ -36,6 +36,7 @@ class BasicPlayer2:
 		self.endTime = time.time() + self.timeLimit
 
 		while time.time() < self.endTime:
+			self.rollouts += 1
 			self.rollout(state, self.playerNumber)
 
 		moves = [i for i in range(4, len(state.board)) if state.board[i] == 0]
@@ -73,8 +74,8 @@ class BasicPlayer2:
 		state.setHexIndex(move, self.playerNumber)
 
 	def rollout(self, state, player):
-		if time.time() > self.endTime:
-			return
+#		if time.time() > self.endTime:
+#			return
 
 		if state.outcome() != 0:
 			v = 1 if state.outcome() == self.playerNumber else -1
@@ -135,7 +136,6 @@ class BasicPlayer2:
 		visits[i] += 1
 		values[i] = values[i] + (1.0 / visits[i]) * (reward - values[i])
 
-		self.rollouts += 1
 		#self.timeStep += 1 if self.increment else 0
 
 		for i in range(len(states)):
