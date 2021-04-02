@@ -127,7 +127,7 @@ class State:
 			tiles = self.wdist * self.bdist
 			for i in range(4, len(self.board)):
 				v = self.board[i]
-				num += (1 << (i - 4)) + (v - 1) * tiles if v != 0 else 0
+				num += 1 << ((i - 4) + (v - 1) * tiles) if v != 0 else 0
 			self.cacheNum = num
 
 		return self.cacheNum

@@ -10,9 +10,11 @@ class FastPlayer:
 		self.expConst = 0.01
 		self.maximizeNonVisited = False
 		self.rollouts = 0
+		self.terminals = set()
 
 		#visits, value
 		self.stateInfo = {}
+		self.descendents = {}
 
 	def makePlay(self, state, timeStep):
 		#Given state, do search
@@ -51,10 +53,20 @@ class FastPlayer:
 		#Get this state's info
 
 		info = []
+		states = None
+
 		if state.number() in self.stateInfo.keys():
 			info = self.stateInfo[state.number()]
 		else:
 			info = [0, 0]
+
+
+		if state.number() in self.descendents.keys():
+			states = self.descendents[state.number()]
+		else:
+			self.descendents[state.number()] = None
+
+			
 
 		info[0] += 1
 
@@ -63,16 +75,23 @@ class FastPlayer:
 			v = 1 if state.outcome() == self.playerNumber else -1
 			info[1] = v
 			self.stateInfo[state.number()] = info
+			self.descendents[state.number()] = []
 			return v
 
 		#State is not terminal, get children
 		moves = state.moves()
-		states = []
+		if states is None:
+			states = []
+			for m in moves:
+				s = state.clone()
+				s.setHexIndex(m, player)
+				states.append(s)
+
+			self.descendents[state.number()] = states
+
+
 		childInfo = []
-		for m in moves:
-			s = state.clone()
-			s.setHexIndex(m, player)
-			states.append(s)
+		for s in states:
 			if s.number() in self.stateInfo.keys():
 				childInfo.append(self.stateInfo[s.number()])
 			else:
