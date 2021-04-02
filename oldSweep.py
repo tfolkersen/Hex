@@ -11,6 +11,7 @@ from mctsplayer import MCTSPlayer
 from humanplayer import HumanPlayer
 from randomplayer import RandomPlayer
 from fastplayer import FastPlayer
+from slowplayer import SlowPlayer
 
 
 from utils import *
@@ -52,8 +53,8 @@ p1.rollouts = 0
 p1.stateInfo = {}
 
 while True:
-	wdist = 4
-	bdist = 4
+	wdist = 6
+	bdist = 6
 
 	game = State(wdist, bdist)
 
@@ -64,7 +65,7 @@ while True:
 
 
 	#p1.softmax = True
-	p2 = FastPlayer(2)
+	p2 = SlowPlayer(2)
 	#p2.softmax = True
 	p2.rollouts = 0
 	p2.stateInfo = {}
@@ -74,11 +75,11 @@ while True:
 	p1.expConst = 0.01
 	p2.expConst = 0.01
 	p1.maximizeNonVisited = True
-	p2.maximizeNonVisited = False
+	p2.maximizeNonVisited = True
 
 	#p2 = HumanPlayer(2)
 
-	limit = 0.4
+	limit = 4.0
 	gameCount = 500
 	p1.timeLimit = limit
 	p2.timeLimit = limit
