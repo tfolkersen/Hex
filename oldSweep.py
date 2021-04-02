@@ -1,4 +1,4 @@
-			
+
 
 import random
 import cProfile
@@ -12,6 +12,7 @@ from humanplayer import HumanPlayer
 from randomplayer import RandomPlayer
 from fastplayer import FastPlayer
 from slowplayer import SlowPlayer
+from fasterplayer import FasterPlayer
 
 
 from utils import *
@@ -53,19 +54,19 @@ p1.rollouts = 0
 p1.stateInfo = {}
 
 while True:
-	wdist = 6
-	bdist = 6
+	wdist = 4
+	bdist = 4
 
 	game = State(wdist, bdist)
 
-	p1 = FastPlayer(1)
+	p1 = FasterPlayer(1)
 	p1.message = None
 	p1.rollouts = 0
 	p1.stateInfo = {}
 
 
 	#p1.softmax = True
-	p2 = SlowPlayer(2)
+	p2 = FastPlayer(2)
 	#p2.softmax = True
 	p2.rollouts = 0
 	p2.stateInfo = {}
@@ -79,7 +80,7 @@ while True:
 
 	#p2 = HumanPlayer(2)
 
-	limit = 4.0
+	limit = 0.4
 	gameCount = 500
 	p1.timeLimit = limit
 	p2.timeLimit = limit
