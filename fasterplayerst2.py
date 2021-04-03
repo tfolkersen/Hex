@@ -5,29 +5,19 @@ from state import numberAfterMove
 
 #store transposition info in a table somewhere
 
-bins = 10000
-transposition = [{}] * bins
 
-def getTableNode(stateNumber):
-	binId = stateNumber % bins
-	b = transposition[binId]
-	if stateNumber in b.keys():
-		return b[stateNumber]
-	return None
-
-def saveTableNode(node):
-	sn = node.state.number()
-	binId = sn % bins
-	transposition[binId][sn] = node
 
 class Node:
-	def __init__(self, state, player):
+	def __init__(self, state, player, owner):
 		self.state = state.clone()
 		self.parent = None
 		self.children = None
 		self.player = player
 		self.visits = 0
 		self.value = 0
+		self.owner = owner
+	
+
 
 	def expandChildren(self):
 		if not self.children is None:
@@ -40,16 +30,16 @@ class Node:
 		tiles = self.state.bdist * self.state.wdist
 		for m in moves:
 			nextNum = numberAfterMove(sn, tiles, m, self.player)
-			n = getTableNode(nextNum)
+			n = self.owner.getTableNode(nextNum)
 			if not n is None:
 				self.children.append(n)
 				continue
 			s = self.state.clone()
 			s.setHexIndex(m, self.player)
 			#self.children.append(s)
-			n = Node(s, np)
+			n = Node(s, np, self.owner)
 			self.children.append(n)
-			saveTableNode(n)
+			self.owner.saveTableNode(n)
 
 class FasterPlayerST2:
 	def __init__(self, playerNumber):
@@ -63,13 +53,30 @@ class FasterPlayerST2:
 
 		self.root = None
 
+		self.bins = 10000
+		self.transposition = [{}] * self.bins
+
+
+	def getTableNode(self, stateNumber):
+		binId = stateNumber % self.bins
+		b = self.transposition[binId]
+		if stateNumber in b.keys():
+			return b[stateNumber]
+		return None
+
+	def saveTableNode(self, node):
+		sn = node.state.number()
+		binId = sn % self.bins
+		self.transposition[binId][sn] = node
+
+
 	def goto(self, state):
-		n = getTableNode(state.number())
+		n = self.getTableNode(state.number())
 		if not n is None:
 			self.root = n
 			n.parent = None
-		n = Node(state, self.playerNumber)	
-		saveTableNode(n)
+		n = Node(state, self.playerNumber, self)	
+		self.saveTableNode(n)
 		self.root = n
 
 	def makePlay(self, state, timeStep):
@@ -91,6 +98,27 @@ class FasterPlayerST2:
 		bestMove = self.root.state.moves()[bestIndex]
 
 		state.setHexIndex(bestMove, self.playerNumber)
+
+	def getPlayInfo(self, state, timeStep, queue):
+		self.rollouts = 0
+		self.goto(state)
+
+		self.endTime = time.time() + self.timeLimit
+
+		while time.time() < self.endTime:
+			self.rollouts += 1
+			self.rollout(self.root, True)
+
+		#get children
+
+		children = self.root.children
+		values = [cn.value for cn in children]
+		visits = [cn.visits for cn in children]
+		
+		queue.put([visits, values])
+
+
+
 
 	def rollout(self, node, expand):
 		#have no children

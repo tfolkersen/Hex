@@ -17,6 +17,7 @@ from fasterplayer import FasterPlayer
 from fasterplayernt import FasterPlayerNT
 from fasterplayerst import FasterPlayerST
 from fasterplayerst2 import FasterPlayerST2
+from mtplayer import MTPlayer
 
 
 from utils import *
@@ -58,22 +59,18 @@ p1.rollouts = 0
 p1.stateInfo = {}
 
 while True:
-	wdist = 4
-	bdist = 4
+	wdist = 5
+	bdist = 5
 
 	game = State(wdist, bdist)
 
-	p1 = FasterPlayerST2(1)
+	p1 = MTPlayer(1, 4)
 	p1.message = None
 	p1.rollouts = 0
-	#p1.stateInfo = {}
 
 
-	#p1.softmax = True
-	p2 = RandomPlayer(2)
-	#p2.softmax = True
+	p2 = FasterPlayerST2(2)
 	p2.rollouts = 0
-	#p2.stateInfo = {}
 
 	p1.bootstrap = False
 	p2.bootstrap = False
@@ -83,7 +80,6 @@ while True:
 	p2.maximizeNonVisited = True
 
 
-	#p2 = HumanPlayer(2)
 
 	limit = 0.1
 	gameCount = 3000
@@ -99,6 +95,9 @@ while True:
 
 	player = random.randint(1, 2)
 	#player = 1
+
+
+	p1.configurePlayers()
 
 	if player == 1:
 		col1 = cBlue
