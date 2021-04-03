@@ -7,7 +7,7 @@ stateHelper = {}
 
 def numberAfterMove(stateNumber, tiles, index, value):
 	num = stateNumber
-	num += (1 << (index - 4)) + (value - 1) * tiles if value != 0 else 0
+	num += 1 << ((index - 4) + (value - 1) * tiles) if value != 0 else 0
 	return num
 
 class State:
@@ -78,7 +78,7 @@ class State:
 
 
 	def _invalidateCache(self):
-		self.cacheNum = -1
+		#self.cacheNum = -1
 		self.cacheOutcome = -1
 		self.moveList = -1
 
@@ -266,7 +266,8 @@ class State:
 			if self.board[i] == 0:
 				choices.append(i)
 		index = random.randint(0, len(choices) - 1)
-		self.board[choices[index]] = value
+		self.setHexIndex(choices[index], value)
+		#self.board[choices[index]] = value
 
 	def testfill(self):
 		self._invalidateCache()
@@ -280,6 +281,7 @@ class State:
 		if self.board[index] == 0:
 			self._invalidateCache()
 			self.board[index] = value
+			self.cacheNum = numberAfterMove(self.cacheNum, self.bdist * self.wdist, index, value)
 			return True
 		return False
 

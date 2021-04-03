@@ -2,6 +2,7 @@
 
 import random
 import cProfile
+import pstats
 import os
 
 from state import State
@@ -62,14 +63,14 @@ while True:
 	p1 = FasterPlayer(1)
 	p1.message = None
 	p1.rollouts = 0
-	p1.stateInfo = {}
+	#p1.stateInfo = {}
 
 
 	#p1.softmax = True
 	p2 = FastPlayer(2)
 	#p2.softmax = True
 	p2.rollouts = 0
-	p2.stateInfo = {}
+	#p2.stateInfo = {}
 
 	p1.bootstrap = False
 	p2.bootstrap = False
@@ -108,16 +109,19 @@ while True:
 	print("(" + str(a1) + " " + str(a2) + ")")
 	print(col1 + "P1" + cWhite + "/" + col2 + "P2" + cWhite + ": " + str(w1) + " " + str(w2))
 	print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
-	print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
-	perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
-	print("% of 0s: " + str(perc))
+	#print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
+	#perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
+	#print("% of 0s: " + str(perc))
 	print("Message: ", end="")
 	print(p1.message)
 
 	while game.outcome() == 0:
 		if player == 1:
 			#input("[Press enter]")
-			#cProfile.run("p1.makePlay(game, p1s)")
+			#cProfile.run("p1.makePlay(game, p1s)", "profileStats")
+			#p = pstats.Stats("profileStats")
+			#p.sort_stats(pstats.SortKey.TIME)
+			#p.print_stats()
 			#exit(0)
 			p1.makePlay(game, p1s)
 			p1s += 1
@@ -133,9 +137,9 @@ while True:
 		print("(" + str(a1) + " " + str(a2) + ")")
 		print(col1 + "P1" + cWhite + "/" + col2 + "P2" + cWhite + ": " + str(w1) + " " + str(w2))
 		print("Rollouts: " + str(p1.rollouts) + " " + str(p2.rollouts))
-		print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
-		perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
-		print("% of 0s: " + str(perc))
+		#print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
+		#perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
+		#print("% of 0s: " + str(perc))
 		print("Message: ", end="")
 		print(p1.message)
 
@@ -154,8 +158,8 @@ while True:
 
 	gameNo += 1
 
-	perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
-	percs.append(perc)
+	#perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
+	#percs.append(perc)
 
 	if gameNo == gameCount + 1:
 		#p1.save("p1.dat")
