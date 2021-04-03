@@ -9,7 +9,6 @@ import sys
 #store transposition info in a table somewhere
 
 
-largeNumber = 99999999999999
 
 class Node:
 	def __init__(self, state, player, owner):
@@ -20,7 +19,8 @@ class Node:
 		self.visits = 0
 		self.value = 0
 		self.owner = owner
-		self.winner = 0
+	
+
 
 	def expandChildren(self):
 		if not self.children is None:
@@ -44,7 +44,7 @@ class Node:
 			self.children.append(n)
 			self.owner.saveTableNode(n)
 
-class FasterPlayerST2:
+class FasterPlayerST2Old:
 	def __init__(self, playerNumber):
 		self.playerNumber = playerNumber
 		self.timeLimit = 0.0
@@ -58,7 +58,6 @@ class FasterPlayerST2:
 
 		self.bins = 10000
 		self.transposition = [{}] * self.bins
-		self.message = ""
 
 
 	def getTableNode(self, stateNumber):
@@ -84,7 +83,6 @@ class FasterPlayerST2:
 		self.root = n
 
 	def makePlay(self, state, timeStep):
-		self.message = ""
 		self.rollouts = 0
 		self.goto(state)
 
@@ -94,16 +92,9 @@ class FasterPlayerST2:
 			self.rollouts += 1
 			self.rollout(self.root, True)
 
-		if self.root.winner:
-			self.message = str(self.playerNumber) + " knows that " + str(self.root.winner) + " wins"
-
 		#get children
 
 		children = self.root.children
-		for i in range(len(children)):
-			if children[i].winner == self.playerNumber:
-				state.setHexIndex(self.root.state.moves()[i], self.playerNumber)
-
 		values = [cn.value for cn in children]
 
 		bestIndex = argmax(values)
@@ -127,7 +118,6 @@ class FasterPlayerST2:
 				return
 
 	def getPlayInfo(self, state, timeStep, tNum, returnDict):
-		returnDict[str(tNum) + "msg"] = ""
 		self.rollouts = 0
 		self.goto(state)
 
@@ -137,13 +127,10 @@ class FasterPlayerST2:
 			self.rollouts += 1
 			self.rollout(self.root, True)
 
-		if self.root.winner:
-			pass
-			returnDict[str(tNum) + "msg"] = str(self.playerNumber) + " knows that " + str(self.root.winner) + " wins"
-
 		#get children
+
 		children = self.root.children
-		values = [cn.value + (100 if cn.winner == self.playerNumber else (0 if cn.winner == 0 else -100)) for cn in children]
+		values = [cn.value for cn in children]
 		visits = [cn.visits for cn in children]
 		
 		#queue.put([visits, values]
@@ -151,9 +138,6 @@ class FasterPlayerST2:
 		returnDict[str(tNum) + "r"] = self.rollouts
 
 	def rollout(self, node, expand):
-		if node.winner:
-			return [node.value, self.gamma]
-
 		#have no children
 		if node.children is None:
 			if expand:
@@ -165,8 +149,6 @@ class FasterPlayerST2:
 		#if node is terminal, return
 		if node.state.outcome() != 0:
 			v = 1 if node.state.outcome() == self.playerNumber else -1
-			node.winner = node.state.outcome()
-			node.visits = largeNumber
 			node.value = v
 			return [v, self.gamma]
 
@@ -187,21 +169,6 @@ class FasterPlayerST2:
 			node.value = node.value + (1.0 / node.visits) * (v * gamma - node.value)
 			return [v, gamma * self.gamma]
 
-		#Check for solved children
-		allSolved = True
-		for cn in children:
-			if cn.winner == node.player:
-				node.winner = node.player
-				node.visits = largeNumber
-				node.value = cn.value
-				return [node.value, self.gamma]
-			elif not cn.winner:
-				allSolved = False
-		if allSolved:
-			node.winner = nextPlayer(node.player)
-			node.value = 1.0 if node.winner == self.playerNumber else -1.0
-			return [node.value, self.gamma]
-
 		#compute heuristic
 		heuristic = []
 		sgn = 1 if node.player == self.playerNumber else -1
@@ -214,22 +181,6 @@ class FasterPlayerST2:
 		bestIndex = argmax(heuristic)
 		bestNode = children[bestIndex]
 		v, gamma = self.rollout(bestNode, expand)
-
-		#Check for solved children
-		allSolved = True
-		for cn in children:
-			if cn.winner == node.player:
-				node.winner = node.player
-				node.visits = largeNumber
-				node.value = cn.value
-				return [node.value, self.gamma]
-			elif not cn.winner:
-				allSolved = False
-		if allSolved:
-			node.winner = nextPlayer(node.player)
-			node.value = 1.0 if node.winner == self.playerNumber else -1.0
-			return [node.value, self.gamma]
-
 
 		node.value = node.value + (1.0 / node.visits) * (gamma * v - node.value)
 		return [v, gamma * self.gamma]

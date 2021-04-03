@@ -60,8 +60,8 @@ p1.rollouts = 0
 p1.stateInfo = {}
 
 while True:
-	wdist = 7
-	bdist = 7
+	wdist = 5
+	bdist = 5
 
 	game = State(wdist, bdist)
 
@@ -117,8 +117,11 @@ while True:
 	#print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
 	#perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
 	#print("% of 0s: " + str(perc))
-	print("Message: ", end="")
+	print("Message1: ", end="")
 	print(p1.message)
+	print("Message2: ", end="")
+	print(p2.message)
+
 
 	while game.outcome() == 0:
 		if player == 1:
@@ -145,8 +148,11 @@ while True:
 		#print("Entries: " + str(len(p1.stateInfo.keys())) + " " + str(len(p2.stateInfo.keys())))
 		#perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
 		#print("% of 0s: " + str(perc))
-		print("Message: ", end="")
+		print("Message1: ", end="")
 		print(p1.message)
+		print("Message2: ", end="")
+		print(p2.message)
+
 
 
 	res = game.outcome()

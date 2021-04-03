@@ -18,6 +18,7 @@ class MTPlayer:
 		self.gamma = 1.0
 		self.tCount = tCount
 		self.threads = []
+		self.message = ""
 
 
 	def configurePlayers(self):
@@ -49,11 +50,14 @@ class MTPlayer:
 		#print("Closed all MTPlayer threads successfully")
 
 	def makePlay(self, state, timeStep):
+		self.message = ""
 		self.rollouts = 0
 
 		for i in range(len(self.players)):
 			self.dataDict[str(i) + "state"] = state
 			self.dataDict[str(i) + "flag"] = 1
+			self.dataDict[str(i) + "msg"] = ""
+			
 
 		for i in range(len(self.threads)):
 			while self.dataDict[str(i) + "flag"] != 0:
@@ -61,9 +65,13 @@ class MTPlayer:
 
 		info = []
 		rollouts = []
+		messages = []
 		for i in range(len(self.threads)):
 			info.append(self.dataDict[i])
 			rollouts.append(self.dataDict[str(i) + "r"])
+			messages.append(self.dataDict[str(i) + "msg"] + " ")
+
+		self.message = messages
 
 		self.rollouts = sum(rollouts)
 
