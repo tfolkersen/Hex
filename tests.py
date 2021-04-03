@@ -2,6 +2,21 @@ import os
 from state import State
 from utils import colors
 
+def nonAdjacentTest():
+	w = 7
+	b = 7
+	s = State(w, b)
+	
+	s.setHex("d4", 1)
+	s.setHex("c3", 2)
+	s.setHex("b5", 2)
+	s.setHex("c6", 2)
+	s.setHex("e5", 2)
+	s.setHex("e2", 2)
+	s.setHex("f3", 2)
+
+	s.draw()
+	exit(0)
 
 def adjacencyTest():
 	w = 5

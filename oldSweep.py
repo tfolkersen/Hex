@@ -24,6 +24,10 @@ from fasterplayerst2old import FasterPlayerST2Old
 
 from utils import *
 
+from tests import nonAdjacentTest
+
+nonAdjacentTest()
+
 cRed = colors["red"]
 cBlue = colors["blue"]
 cWhite = colors["white"]
