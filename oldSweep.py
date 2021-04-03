@@ -18,6 +18,7 @@ from fasterplayernt import FasterPlayerNT
 from fasterplayerst import FasterPlayerST
 from fasterplayerst2 import FasterPlayerST2
 from mtplayer import MTPlayer
+from mtplayerDelete import MTPlayerDelete
 
 
 from utils import *
@@ -64,12 +65,12 @@ while True:
 
 	game = State(wdist, bdist)
 
-	p1 = MTPlayer(1, 8)
+	p1 = MTPlayer(1, 10)
 	p1.message = None
 	p1.rollouts = 0
 
 
-	p2 = HumanPlayer(2)
+	p2 = FasterPlayerST2(2)
 	p2.rollouts = 0
 
 	p1.bootstrap = False
@@ -81,7 +82,7 @@ while True:
 
 
 
-	limit = 4.0
+	limit = 0.6
 	gameCount = 3000
 	p1.timeLimit = limit
 	p2.timeLimit = limit
@@ -98,6 +99,7 @@ while True:
 
 
 	p1.configurePlayers()
+	#p2.configurePlayers()
 
 	if player == 1:
 		col1 = cBlue
