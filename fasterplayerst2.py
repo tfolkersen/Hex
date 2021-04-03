@@ -99,7 +99,7 @@ class FasterPlayerST2:
 
 		state.setHexIndex(bestMove, self.playerNumber)
 
-	def getPlayInfo(self, state, timeStep, queue):
+	def getPlayInfo(self, state, timeStep, tNum, returnDict):
 		self.rollouts = 0
 		self.goto(state)
 
@@ -115,7 +115,10 @@ class FasterPlayerST2:
 		values = [cn.value for cn in children]
 		visits = [cn.visits for cn in children]
 		
-		queue.put([visits, values])
+		#queue.put([visits, values]
+		returnDict[tNum] = [visits, values]
+		returnDict[str(tNum) + "r"] = self.rollouts
+
 
 
 

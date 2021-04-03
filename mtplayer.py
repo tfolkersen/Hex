@@ -3,6 +3,8 @@ from fasterplayerst2 import FasterPlayerST2
 from queue import Queue
 from utils import argmax
 
+from multiprocessing import Process, Manager
+
 
 class MTPlayer:
 	def __init__(self, playerNumber, threads):
@@ -32,18 +34,27 @@ class MTPlayer:
 		self.rollouts = 0
 		threads = []
 		returns = []
-		for p in self.players:
-			returns.append(Queue())
-			t = threading.Thread(target = p.getPlayInfo, args=(state, timeStep, returns[-1]))
+
+		manager = Manager()
+		returnDict = manager.dict()
+		for tNum in range(len(self.players)):
+			#returns.append(Queue())
+			#t = threading.Thread(target = p.getPlayInfo, args=(state, timeStep, returns[-1]))
+			p = self.players[tNum]
+			t = Process(target = p.getPlayInfo, args = (state, timeStep, tNum, returnDict))
 			threads.append(t)
 			t.start()
 
-		info = []
 		for i in range(len(threads)):
 			threads[i].join()
-			info.append(returns[i].get())
 
-		self.rollouts = sum([p.rollouts for p in self.players])
+		info = []
+		rollouts = []
+		for i in range(len(threads)):
+			info.append(returnDict[i])
+			rollouts.append(returnDict[str(i) + "r"])
+
+		self.rollouts = sum(rollouts)
 
 		moves = state.moves()
 		visits = [inf[0] for inf in info]

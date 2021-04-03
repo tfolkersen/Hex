@@ -64,7 +64,7 @@ while True:
 
 	game = State(wdist, bdist)
 
-	p1 = MTPlayer(1, 4)
+	p1 = MTPlayer(1, 8)
 	p1.message = None
 	p1.rollouts = 0
 
@@ -81,7 +81,7 @@ while True:
 
 
 
-	limit = 0.1
+	limit = 0.5
 	gameCount = 3000
 	p1.timeLimit = limit
 	p2.timeLimit = limit
