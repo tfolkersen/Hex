@@ -3,6 +3,9 @@ import time
 from utils import nextPlayer, argmax
 from state import numberAfterMove
 
+import os
+import sys
+
 #store transposition info in a table somewhere
 
 
@@ -102,6 +105,9 @@ class FasterPlayerST2:
 	def startJob(self, tNum, data):
 		flagName = str(tNum) + "flag"
 		stateName = str(tNum) + "state"
+
+		null = open(os.devnull, "w")
+		sys.stderr = null
 
 		while True:
 			if data[flagName] == 1:
