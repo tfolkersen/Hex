@@ -14,6 +14,9 @@ from randomplayer import RandomPlayer
 from fastplayer import FastPlayer
 from slowplayer import SlowPlayer
 from fasterplayer import FasterPlayer
+from fasterplayernt import FasterPlayerNT
+from fasterplayerst import FasterPlayerST
+from fasterplayerst2 import FasterPlayerST2
 
 
 from utils import *
@@ -60,14 +63,14 @@ while True:
 
 	game = State(wdist, bdist)
 
-	p1 = FasterPlayer(1)
+	p1 = FasterPlayerST2(1)
 	p1.message = None
 	p1.rollouts = 0
 	#p1.stateInfo = {}
 
 
 	#p1.softmax = True
-	p2 = FastPlayer(2)
+	p2 = RandomPlayer(2)
 	#p2.softmax = True
 	p2.rollouts = 0
 	#p2.stateInfo = {}
@@ -79,10 +82,11 @@ while True:
 	p1.maximizeNonVisited = True
 	p2.maximizeNonVisited = True
 
+
 	#p2 = HumanPlayer(2)
 
-	limit = 0.4
-	gameCount = 500
+	limit = 0.1
+	gameCount = 3000
 	p1.timeLimit = limit
 	p2.timeLimit = limit
 	p1.expConst = a1
@@ -164,7 +168,7 @@ while True:
 	if gameNo == gameCount + 1:
 		#p1.save("p1.dat")
 		print("P1/P2: " + str(w1) + " " + str(w2))
-		print(sum(percs) / len(percs))
+		#print(sum(percs) / len(percs))
 		exit(0)
 
 	#if gameNo == 20:
