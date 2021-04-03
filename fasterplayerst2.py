@@ -99,6 +99,18 @@ class FasterPlayerST2:
 
 		state.setHexIndex(bestMove, self.playerNumber)
 
+	def startJob(self, tNum, data):
+		flagName = str(tNum) + "flag"
+		stateName = str(tNum) + "state"
+
+		while True:
+			if data[flagName] == 1:
+				state = data[stateName]
+				self.getPlayInfo(state, 0, tNum, data)
+				data[flagName] = 0
+			if data[flagName] == -1:
+				return
+
 	def getPlayInfo(self, state, timeStep, tNum, returnDict):
 		self.rollouts = 0
 		self.goto(state)
@@ -118,10 +130,6 @@ class FasterPlayerST2:
 		#queue.put([visits, values]
 		returnDict[tNum] = [visits, values]
 		returnDict[str(tNum) + "r"] = self.rollouts
-
-
-
-
 
 	def rollout(self, node, expand):
 		#have no children

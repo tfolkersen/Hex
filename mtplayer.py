@@ -2,12 +2,13 @@ import threading
 from fasterplayerst2 import FasterPlayerST2
 from queue import Queue
 from utils import argmax
+import atexit
 
 from multiprocessing import Process, Manager
 
 
 class MTPlayer:
-	def __init__(self, playerNumber, threads):
+	def __init__(self, playerNumber, tCount):
 		self.playerNumber = playerNumber
 		self.timeLimit = 0.0
 		self.bootstrap = False
@@ -15,12 +16,18 @@ class MTPlayer:
 		self.maximizeNonVisited = False
 		self.rollouts = 0
 		self.gamma = 1.0
-		self.threads = threads
+		self.tCount = tCount
+		self.threads = []
 
 
 	def configurePlayers(self):
 		self.players = []
-		for i in range(self.threads):
+		self.manager = Manager()
+		self.dataDict = self.manager.dict()
+
+		#atexit.register(self.killThreads)
+
+		for i in range(self.tCount):
 			p = FasterPlayerST2(self.playerNumber)
 			p.timeLimit = self.timeLimit
 			p.expConst = self.expConst
@@ -28,31 +35,35 @@ class MTPlayer:
 			p.maximizeNonVisited = self.maximizeNonVisited
 			p.gamma = self.gamma
 			self.players.append(p)
+	
+			self.dataDict[str(i) + "flag"] = 0
+			proc = Process(target = FasterPlayerST2.startJob, args = (p, i, self.dataDict))
+			self.threads.append(proc)
+			proc.start()
 
+
+	def killThreads(self):
+		for i in range(len(self.threads)):
+			self.dataDict[str(i) + "flag"] = -1
+			self.threads[i].join()
+		#print("Closed all MTPlayer threads successfully")
 
 	def makePlay(self, state, timeStep):
 		self.rollouts = 0
-		threads = []
-		returns = []
 
-		manager = Manager()
-		returnDict = manager.dict()
-		for tNum in range(len(self.players)):
-			#returns.append(Queue())
-			#t = threading.Thread(target = p.getPlayInfo, args=(state, timeStep, returns[-1]))
-			p = self.players[tNum]
-			t = Process(target = p.getPlayInfo, args = (state, timeStep, tNum, returnDict))
-			threads.append(t)
-			t.start()
+		for i in range(len(self.players)):
+			self.dataDict[str(i) + "state"] = state
+			self.dataDict[str(i) + "flag"] = 1
 
-		for i in range(len(threads)):
-			threads[i].join()
+		for i in range(len(self.threads)):
+			while self.dataDict[str(i) + "flag"] != 0:
+				pass
 
 		info = []
 		rollouts = []
-		for i in range(len(threads)):
-			info.append(returnDict[i])
-			rollouts.append(returnDict[str(i) + "r"])
+		for i in range(len(self.threads)):
+			info.append(self.dataDict[i])
+			rollouts.append(self.dataDict[str(i) + "r"])
 
 		self.rollouts = sum(rollouts)
 
@@ -69,11 +80,10 @@ class MTPlayer:
 				mValues.append(0)
 				continue
 
-			mVal = sum([(values[t][m] * visits[t][m]) / allVisits for t in range(self.threads)])
+			mVal = sum([(values[t][m] * visits[t][m]) / allVisits for t in range(len((self.threads)))])
 			mValues.append(mVal)
 
 		bestMove = moves[argmax(mValues)]
-
 
 		state.setHexIndex(bestMove, self.playerNumber)
 
