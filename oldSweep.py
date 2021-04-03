@@ -19,6 +19,7 @@ from fasterplayerst import FasterPlayerST
 from fasterplayerst2 import FasterPlayerST2
 from mtplayer import MTPlayer
 from mtplayerDelete import MTPlayerDelete
+from fasterplayerst2old import FasterPlayerST2Old
 
 
 from utils import *
@@ -60,8 +61,8 @@ p1.rollouts = 0
 p1.stateInfo = {}
 
 while True:
-	wdist = 5
-	bdist = 5
+	wdist = 7
+	bdist = 7
 
 	game = State(wdist, bdist)
 
@@ -70,7 +71,7 @@ while True:
 	p1.rollouts = 0
 
 
-	p2 = FasterPlayerST2(2)
+	p2 = MTPlayer(2, 1)
 	p2.rollouts = 0
 
 	p1.bootstrap = False
@@ -82,7 +83,7 @@ while True:
 
 
 
-	limit = 0.6
+	limit = 1.0
 	gameCount = 3000
 	p1.timeLimit = limit
 	p2.timeLimit = limit
@@ -98,8 +99,10 @@ while True:
 	#player = 1
 
 
+	p1.message = ""
+	p2.message = ""
 	p1.configurePlayers()
-	#p2.configurePlayers()
+	p2.configurePlayers()
 
 	if player == 1:
 		col1 = cBlue
@@ -168,7 +171,7 @@ while True:
 			a1 = a1 + 0.03 * (a2 - a1)
 
 	gameNo += 1
-	p1.killThreads()
+	#p1.killThreads()
 
 	#perc = -1 if len(p1.stateInfo.keys()) == 0 else len([1 for k in p1.stateInfo.keys() if p1.stateInfo[k][1] == 0]) / len(p1.stateInfo.keys())
 	#percs.append(perc)

@@ -187,21 +187,6 @@ class FasterPlayerST2:
 			node.value = node.value + (1.0 / node.visits) * (v * gamma - node.value)
 			return [v, gamma * self.gamma]
 
-		#Check for solved children
-		allSolved = True
-		for cn in children:
-			if cn.winner == node.player:
-				node.winner = node.player
-				node.visits = largeNumber
-				node.value = cn.value
-				return [node.value, self.gamma]
-			elif not cn.winner:
-				allSolved = False
-		if allSolved:
-			node.winner = nextPlayer(node.player)
-			node.value = 1.0 if node.winner == self.playerNumber else -1.0
-			return [node.value, self.gamma]
-
 		#compute heuristic
 		heuristic = []
 		sgn = 1 if node.player == self.playerNumber else -1
