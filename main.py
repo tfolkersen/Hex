@@ -17,6 +17,7 @@ from fasterplayer import FasterPlayer
 from fasterplayernt import FasterPlayerNT
 from fasterplayerst import FasterPlayerST
 from fasterplayerst2 import FasterPlayerST2
+from fasterplayerst3 import FasterPlayerST3
 from mtplayer import MTPlayer
 from mtplayerDelete import MTPlayerDelete
 from fasterplayerst2old import FasterPlayerST2Old
@@ -65,17 +66,21 @@ p1.rollouts = 0
 p1.stateInfo = {}
 
 while True:
-	wdist = 7
-	bdist = 7
+	firstColor = random.randint(1, 2)
+
+	wdist = 8
+	bdist = 8
 
 	game = State(wdist, bdist)
 
-	p1 = MTPlayer(1, 8)
+	#p1 = FasterPlayerST3(firstColor)
+	p1 = MTPlayer(firstColor, 10)
 	p1.message = None
 	p1.rollouts = 0
 
 
-	p2 = MTPlayer(2, 1)
+	#p2 = MTPlayer(2, 1)
+	p2 = FasterPlayerST2(nextPlayer(firstColor))
 	p2.rollouts = 0
 
 	p1.bootstrap = False
@@ -85,9 +90,13 @@ while True:
 	p1.maximizeNonVisited = True
 	p2.maximizeNonVisited = True
 
+	firstPlayer = p1
+	secondPlayer = p2
+	if firstColor != 1:
+		firstPlayer = p2
+		secondPlayer = p1
 
-
-	limit = 1.0
+	limit = 1.4
 	gameCount = 3000
 	p1.timeLimit = limit
 	p2.timeLimit = limit
@@ -102,11 +111,18 @@ while True:
 	player = random.randint(1, 2)
 	#player = 1
 
+	game.setHex("d4", 1)
+	game.setHex("e3", 1)
+	game.setHex("c5", 1)
+
+	game.setHex("e2", 1)
+	game.setHex("b5", 1)
+
 
 	p1.message = ""
 	p2.message = ""
 	p1.configurePlayers()
-	p2.configurePlayers()
+	#p2.configurePlayers()
 
 	if player == 1:
 		col1 = cBlue
@@ -138,10 +154,10 @@ while True:
 			#p.sort_stats(pstats.SortKey.TIME)
 			#p.print_stats()
 			#exit(0)
-			p1.makePlay(game, p1s)
+			firstPlayer.makePlay(game, p1s)
 			p1s += 1
 		if player == 2:
-			p2.makePlay(game, p2s)
+			secondPlayer.makePlay(game, p2s)
 			p2s += 1
 
 		player = nextPlayer(player)
@@ -164,9 +180,15 @@ while True:
 
 	res = game.outcome()
 	if res == 1:
-		w1 += 1
+		if firstColor == 1:
+			w1 += 1
+		else:
+			w2 += 1
 	else:
-		w2 += 1
+		if firstColor == 1:
+			w2 += 1
+		else:
+			w1 += 1
 
 	if learn:
 		if res == 1:
