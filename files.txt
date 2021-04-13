@@ -1,0 +1,33 @@
+Refactor these:
+	fasterplayerst2.py
+	mtplayer.py
+	fasterplayerst3.py
+	oldmain.py
+
+Look at these:
+	oldmain.py
+
+Work on these:
+	main.py
+
+Old code (look at this):
+	basicplayer.py
+	basicplayer2.py
+	evaluate.py
+	fasterplayer.py
+	fasterplayernt.py
+	fasterplayerst.py
+	fasterplayerst2Delete.py
+	fasterplayerst2old.py
+	fastplayer.py
+	mctsplayer.py
+	mtplayerDelete.py
+	slowplayer.py
+
+Probably done:
+	utils.py
+	state.py
+	tests.py
+	humanplayer.py
+	randomplayer.py
+

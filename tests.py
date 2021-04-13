@@ -1,7 +1,18 @@
+"""		tests
+
+	Defines some tests of various functionality.
+"""
+
 import os
 from state import State
 from utils import colors
 
+"""		nonAdjacentTest
+
+	Makes a 7x7 board and colors a cell with player 1 color,
+		marks nearby non adjacent cells with player 2 color,
+		then draws the board.
+"""
 def nonAdjacentTest():
 	w = 7
 	b = 7
@@ -16,8 +27,12 @@ def nonAdjacentTest():
 	s.setHex("f3", 2)
 
 	s.draw()
-	exit(0)
 
+"""		adjacencyTest
+
+	Makes a 5x5 board and on every iteration, shows a hex and highlights its adjacent
+		hexes. Shows edges too.
+"""
 def adjacencyTest():
 	w = 5
 	b = 5
@@ -43,6 +58,11 @@ def adjacencyTest():
 
 		input("[Press enter]")
 
+"""		searchTest
+
+	Generates a random 5x5 board and shows for each player whether or not
+		they have won.
+"""
 def searchTest():
 	w = 5
 	b = 5
@@ -56,4 +76,5 @@ def searchTest():
 		print("2 win: " + str(s.pathTest(1, 3, 2)))
 
 		input("[Press enter to generate another board]")
+
 
