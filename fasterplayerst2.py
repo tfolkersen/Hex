@@ -79,6 +79,7 @@ class FasterPlayerST2:
 		if not n is None:
 			self.root = n
 			n.parent = None
+			return
 		n = Node(state, self.playerNumber, self)	
 		self.saveTableNode(n)
 		self.root = n
@@ -103,6 +104,7 @@ class FasterPlayerST2:
 		for i in range(len(children)):
 			if children[i].winner == self.playerNumber:
 				state.setHexIndex(self.root.state.moves()[i], self.playerNumber)
+				return
 
 		values = [cn.value for cn in children]
 

@@ -73,14 +73,18 @@ while True:
 
 	game = State(wdist, bdist)
 
-	#p1 = FasterPlayerST3(firstColor)
-	p1 = MTPlayer(firstColor, 10)
+	p1 = FasterPlayerST3(firstColor)
+	#p1 = MTPlayer(firstColor, 4, useAltPlayer = True)
+	#p1 = RandomPlayer(firstColor)
+	#p1 = MTPlayer(firstColor, 10)
 	p1.message = None
 	p1.rollouts = 0
 
 
 	#p2 = MTPlayer(2, 1)
 	p2 = FasterPlayerST2(nextPlayer(firstColor))
+	#p2 = MTPlayer(nextPlayer(firstColor), 4, useAltPlayer = False)
+	#p2 = HumanPlayer(nextPlayer(firstColor))
 	p2.rollouts = 0
 
 	p1.bootstrap = False
@@ -96,7 +100,7 @@ while True:
 		firstPlayer = p2
 		secondPlayer = p1
 
-	limit = 1.4
+	limit = 4.0
 	gameCount = 3000
 	p1.timeLimit = limit
 	p2.timeLimit = limit
@@ -119,9 +123,10 @@ while True:
 	game.setHex("b5", 1)
 
 
+
 	p1.message = ""
 	p2.message = ""
-	p1.configurePlayers()
+	#p1.configurePlayers()
 	#p2.configurePlayers()
 
 	if player == 1:
@@ -144,7 +149,6 @@ while True:
 	print(p1.message)
 	print("Message2: ", end="")
 	print(p2.message)
-
 
 	while game.outcome() == 0:
 		if player == 1:

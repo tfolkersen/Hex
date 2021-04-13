@@ -53,6 +53,9 @@ class State:
 			h["labels"] = labels
 			h["labelLengths"] = labelLengths
 
+
+			self._initDirAdj()
+
 			self._initAdjacencySets()
 
 		self.cacheNum = 0
@@ -242,6 +245,87 @@ class State:
 
 		return neighbours
 
+	def dirAdj(self, index, direction):
+		return stateHelper[self.dims]["dir"][index][direction]
+
+	def _initDirAdj(self):
+		h = stateHelper[self.dims]
+		edges = h["edges"]
+
+		h["dir"] = {}
+
+
+		for i in range(len(self.board)):
+			h["dir"][i] = {}
+			d = h["dir"][i]
+			d["u"] = -1
+			d["ul"] = -1
+			d["ur"] = -1
+			d["d"] = -1
+			d["dl"] = -1
+			d["dr"] = -1
+
+		bdist = self.bdist
+		wdist = self.wdist
+
+		low = 4
+		high = len(self.board) - 1
+
+		bottom = bdist - 1 + 4
+		top = (wdist - 1) * bdist + 4
+
+		for index in range(4, len(self.board)):
+			d = h["dir"][index]
+
+			#up left
+			n = index - 1
+			if ((index - 4) % bdist) - 1 < 0:
+				n = -1
+			d["ul"] = n
+			
+
+			#down right
+			n = index + 1
+			if ((index - 4) % bdist) + 1 >= bdist:
+				n = -1
+			d["dr"] = n
+
+			#up right
+			n = index + bdist
+			if (n > high):
+				n = -1
+			d["ur"] = n
+
+			#down left
+			n = index - bdist
+			if (n < low):
+				n = -1
+			d["dl"] = n
+
+			#up
+			edge = False
+			if index in edges[0]:
+				edge = True
+			if index in edges[1]:
+				edge = True
+			if not edge:
+				n = index + bdist - 1
+				d["u"] = n
+
+			#down
+			edge = False
+			if index in edges[2]:
+				edge = True
+			if index in edges[3]:
+				edge = True
+			if not edge:
+				n = index - bdist + 1
+				d["d"] = n
+
+			
+
+			
+
 	def _initAdjacencySets(self):
 		h = stateHelper[self.dims]
 		h["adjacency"] = []
@@ -274,11 +358,11 @@ class State:
 		for i in range(0, len(self.board)):
 			self.board[i] = i
 
-	def setHexIndex(self, index, value):
+	def setHexIndex(self, index, value, force = False):
 		if index < 0 or index >= len(self.board):
 			return False
 	
-		if self.board[index] == 0:
+		if self.board[index] == 0 or force:
 			self._invalidateCache()
 			self.board[index] = value
 			self.cacheNum = numberAfterMove(self.cacheNum, self.bdist * self.wdist, index, value)

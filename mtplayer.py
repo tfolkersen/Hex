@@ -1,5 +1,6 @@
 import threading
 from fasterplayerst2 import FasterPlayerST2
+from fasterplayerst3 import FasterPlayerST3
 from queue import Queue
 from utils import argmax
 import atexit
@@ -8,7 +9,7 @@ from multiprocessing import Process, Manager
 
 
 class MTPlayer:
-	def __init__(self, playerNumber, tCount):
+	def __init__(self, playerNumber, tCount, useAltPlayer = False):
 		self.playerNumber = playerNumber
 		self.timeLimit = 0.0
 		self.bootstrap = False
@@ -19,6 +20,7 @@ class MTPlayer:
 		self.tCount = tCount
 		self.threads = []
 		self.message = ""
+		self.useAltPlayer = useAltPlayer
 
 
 	def configurePlayers(self):
@@ -29,7 +31,10 @@ class MTPlayer:
 		#atexit.register(self.killThreads)
 
 		for i in range(self.tCount):
-			p = FasterPlayerST2(self.playerNumber)
+			if self.useAltPlayer:
+				p = FasterPlayerST3(self.playerNumber)
+			else:
+				p = FasterPlayerST2(self.playerNumber)
 			p.timeLimit = self.timeLimit
 			p.expConst = self.expConst
 			p.bootstrap = self.bootstrap
