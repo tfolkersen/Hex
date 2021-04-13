@@ -1,14 +1,14 @@
-Refactor these:
-	fasterplayerst2.py
-	mtplayer.py
-	fasterplayerst3.py
-	oldmain.py
+main.py
+fasterplayerst2.py
 
-Look at these:
-	oldmain.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Work on these:
-	main.py
+mtplayer.py
+oldmain.py
+
+fasterplayerst3.py
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Old code (look at this):
 	basicplayer.py
@@ -23,11 +23,4 @@ Old code (look at this):
 	mctsplayer.py
 	mtplayerDelete.py
 	slowplayer.py
-
-Probably done:
-	utils.py
-	state.py
-	tests.py
-	humanplayer.py
-	randomplayer.py
 

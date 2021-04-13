@@ -76,5 +76,3 @@ def searchTest():
 		print("2 win: " + str(s.pathTest(1, 3, 2)))
 
 		input("[Press enter to generate another board]")
-
-

@@ -155,4 +155,7 @@ def softmin(values):
 	Returns the number representing the player other than the one given.
 """
 def nextPlayer(current):
+	if not current in [1, 2]:
+		print("Bad player number in nextPlayer: " + str(current))
+		raise
 	return 1 if current == 2 else 2

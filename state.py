@@ -52,6 +52,7 @@ class State:
 		#indices 0, 1, 2, and 3 are top, right, bottom, and left edges respectively
 		#these edges are treated like any other cell so that some computations are simpler
 		self.board = [1, 2, 1, 2] + [0] * (bdist * wdist)
+
 		self.bdist = bdist
 		self.wdist = wdist
 		self.dims = (wdist, bdist)
@@ -127,7 +128,7 @@ class State:
 		Invalidates cached values (i.e. move list, number, etc.). Call this from internal functions
 			that modify the State (like placing new pieces on the board).
 
-		NOTE: self.number isn't invalidated because it must be updated incrementally, otherwise performance suffers.
+		NOTE: self.cacheNum isn't invalidated because it must be updated incrementally, otherwise performance suffers.
 	"""
 	def _invalidateCache(self):
 		self.cacheOutcome = -1
@@ -326,10 +327,9 @@ class State:
 			#print("down -- " + str(n))
 			neighbours.add(n)
 
-
 		return neighbours
 
-	"""		dirAdj		"directional adjacent cell"
+	"""		dirAdj		"directionally adjacent cell"
 
 		index -- integer index of board cell (not border)
 		direction -- direction to go in (string)
@@ -343,7 +343,8 @@ class State:
 			"dr" -- down right
 
 		Given a board index and a direction, returns the index of the board cell in that
-			direction, or -1 if no such cell exists. Uses cached data.
+			direction, or -1 if no such cell exists. Uses cached data. A border cell used as an index
+			will return -1, and if a border cell is in the given direction, -1 is returned.
 	"""
 	def dirAdj(self, index, direction):
 		return stateHelper[self.dims]["dir"][index][direction]
@@ -453,7 +454,7 @@ class State:
 			
 	"""		randomMove
 
-		player -- player whose color to use (1 for black, 2 for white)
+		player -- integer of player whose color to use (1 for black, 2 for white)
 
 		Randomly place a piece for the specified player
 	"""
@@ -473,13 +474,14 @@ class State:
 	"""
 	def testfill(self):
 		self._invalidateCache()
+		self.cacheNum = -1
 		for i in range(0, len(self.board)):
 			self.board[i] = i
 
 	"""		setHexIndex
 
 		index -- board index of cell to place hex at
-		player -- player for whom this hex is being placed
+		player -- integer of player for whom this hex is being placed
 		force -- default False. If True will overwrite existing hex, otherwise will not overwrite
 
 		Places a hex for the specified player at the specified board location. If force = True, this will overwrite any previously
@@ -500,7 +502,7 @@ class State:
 
 		bCoord -- coordinate along black axis (integer starting at 1, or letter starting at "a")
 		wCoord -- coordinate along white axis (integer starting at 1)
-		player -- player for whom this hex is being placed
+		player -- integer of player for whom this hex is being placed
 		force -- default False. If True will overwrite existing hex, otherwise will not overwrite
 
 		Places a hex for the specified player at the specified board location. If force = True, this will overwrite any previously
@@ -509,7 +511,6 @@ class State:
 	def setHex2(self, bCoord, wCoord, player, force = False):
 		index = self._bwToIndex(bCoord, wCoord)
 		return self.setHexIndex(index, player, force)
-
 
 	"""		coordToIndex
 
@@ -534,8 +535,8 @@ class State:
 
 	"""		setHex
 
-		coord -- string board coordinates (i.e. a4, b6, etc.)
-		player -- Player for whom to place this piece
+		coord -- string board coordinates (i.e. "a4", "b6", etc.)
+		player -- integer of player for whom to place this piece
 		force -- default False. If True will overwrite existing hex, otherwise won't overwrite
 
 		Places a hex for the specified player at the specified board location. If force = True, this will overwrite any previously
@@ -547,7 +548,8 @@ class State:
 
 	"""		draw
 
-		Draws the board on the screen
+		Draws the board on the screen.
+			(This function is poorly documented and hard to read.)
 	"""
 	def draw(self):
 		#print(self.board)
@@ -564,7 +566,7 @@ class State:
 		centerRow = wdist - 1 #row corresponding to left corner
 
 		maxWidth = min(bdist, wdist)
-		top = (wdist - 1) * bdist
+		top = (wdist - 1) * bdist #index of hex at top of screen
 		dist = bdist + 1
 
 		startOffset = centerRow - 1 + 2
@@ -605,8 +607,6 @@ class State:
 		endOffset = rows - centerRow
 		print("  " * endOffset, end = "")
 		print(labels[-1])
-
-
 		
 '''
 	  bdist
