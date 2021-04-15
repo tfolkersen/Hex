@@ -1,3 +1,10 @@
+"""		BasicPlayer2
+
+	This is old code. Look at FasterPlayer2 instead
+
+"""
+
+
 import time
 from utils import *
 import math
@@ -9,10 +16,10 @@ class BasicPlayer2:
 		self.stateInfo = {}
 		self.expConst = 0.01
 		self.rollouts = 0
-		self.timeLimit = 5.0
+		self.timeLimit = 0.0
 		self.increment = True
 		self.timeStep = 0
-		self.gamma = 0.9
+		self.gamma = 1.0
 		self.softmax = False
 
 
@@ -30,7 +37,7 @@ class BasicPlayer2:
 		f.close()
 	
 
-	def makePlay(self, state, timeStep):
+	def getPlay(self, state):
 		self.rollouts = 0
 		self.timeStep += 1
 		self.endTime = time.time() + self.timeLimit
@@ -71,7 +78,8 @@ class BasicPlayer2:
 		best = argmax(values)
 		move = moves[best]
 
-		state.setHexIndex(move, self.playerNumber)
+		#state.setHexIndex(move, self.playerNumber)
+		return move
 
 	def rollout(self, state, player):
 #		if time.time() > self.endTime:

@@ -97,6 +97,9 @@ def makeMTPlayer3(playerNumber):
 	return p
 
 
+experiments = [[makeBasicPlayer2, makeRandomPlayer], [makeFasterPlayer2, makeBasicPlayer2], [makeFasterPlayer3, makeFasterPlayer2], [makeMTPlayer3, makeFasterPlayer3]]
+experiments = [[makeFasterPlayer3, makeBasicPlayer2]]
+
 #Parameters
 wdist = 6
 bdist = 6
@@ -105,35 +108,49 @@ timeLimit = 1.0
 p1Threads = 4
 p2Threads = 4
 
-player1Factory = makeBasicPlayer2
-player2Factory = makeFasterPlayer2
+outFile = open("data.txt", "w")
+outFile.close()
 
-#Initialization
-wins = [0, 0]
-gameNumber = 1
 
-while gameNumber <= maxGames:
-	players = [player1Factory(1), player2Factory(2)]
-	
-	game = State(wdist, bdist)
-	toPlay = random.randint(1, 2)
 
-	while game.outcome() == 0:
+for e in experiments:
+	player1Factory = e[0]
+	player2Factory = e[1]
+
+
+	#Initialization
+	wins = [0, 0]
+	gameNumber = 1
+
+	while gameNumber <= maxGames:
+		players = [player1Factory(1), player2Factory(2)]
+		
+		game = State(wdist, bdist)
+		toPlay = random.randint(1, 2)
+
+		while game.outcome() == 0:
+			clear()
+			draw()
+
+			player = players[toPlay - 1]
+			move = player.getPlay(game.clone())
+
+			if not game.setHexIndex(move, toPlay):
+				print("Couldn't make move (player " + str(toPlay) + " move " + str(move))
+				raise
+
+			toPlay = nextPlayer(toPlay)
+
+		wins[game.outcome() - 1] += 1
+
 		clear()
 		draw()
 
-		player = players[toPlay - 1]
-		move = player.getPlay(game.clone())
+		gameNumber += 1
 
-		if not game.setHexIndex(move, toPlay):
-			print("Couldn't make move (player " + str(toPlay) + " move " + str(move))
-			raise
+	p1Name = players[0].playerName if hasattr(players[0], "playerName") else players[0].__class__.__name__
+	p2Name = players[1].playerName if hasattr(players[1], "playerName") else players[1].__class__.__name__
 
-		toPlay = nextPlayer(toPlay)
-
-	wins[game.outcome() - 1] += 1
-
-	clear()
-	draw()
-
-	gameNumber += 1
+	outFile = open("data.txt", "a")
+	outFile.write(p1Name + " vs " + p2Name + ": " + str(wins[0]) + "/" + str(wins[1]) + "\n")
+	outFile.close()
