@@ -69,7 +69,13 @@ class MTPlayer:
 			self.players.append(p)
 	
 			self.dataDict[str(i) + "flag"] = 0
-			proc = Process(target = FasterPlayer2.startJob, args = (p, i, self.dataDict))
+
+			proc = None
+			if self.useAltPlayer:
+				proc = Process(target = FasterPlayer2.startJob, args = (p, i, self.dataDict))
+			else:
+				proc = Process(target = FasterPlayer3.startJob, args = (p, i, self.dataDict))
+
 			self.threads.append(proc)
 			proc.start()
 

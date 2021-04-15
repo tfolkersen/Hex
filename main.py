@@ -105,8 +105,8 @@ timeLimit = 1.0
 p1Threads = 4
 p2Threads = 4
 
-player1Factory = makeBasicPlayer2
-player2Factory = makeFasterPlayer2
+player1Factory = makeRandomPlayer
+player2Factory = makeMTPlayer2
 
 #Initialization
 wins = [0, 0]
@@ -123,11 +123,20 @@ while gameNumber <= maxGames:
 		draw()
 
 		player = players[toPlay - 1]
-		move = player.getPlay(game.clone())
 
-		if not game.setHexIndex(move, toPlay):
-			print("Couldn't make move (player " + str(toPlay) + " move " + str(move))
-			raise
+		move = None
+		if isinstance(player, HumanPlayer):
+			while True:
+				move = player.getPlay(game.clone())
+				if not game.setHexIndex(move, toPlay):
+					print("Couldn't place hex there, pick an open cell")
+				else:
+					break
+		else:
+			move = player.getPlay(game.clone())
+			if not game.setHexIndex(move, toPlay):
+				print("Couldn't make move (player " + str(toPlay) + " move " + str(move) + ")")
+				raise
 
 		toPlay = nextPlayer(toPlay)
 

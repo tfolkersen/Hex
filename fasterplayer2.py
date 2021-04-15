@@ -7,7 +7,7 @@
 import math
 import time
 from utils import nextPlayer, argmax
-from state import numberAfterMove
+from state import numberAfterMove, State
 
 import os
 import sys
@@ -168,6 +168,8 @@ class FasterPlayer2:
 		null = open(os.devnull, "w") #suppress messages when thread is killed
 		sys.stderr = null
 
+		#print("Starting " + str(tNum))
+
 		while True: #busy loop...
 			if data[flagName] == 1: #there is a new job to do
 				state = data[stateName]
@@ -185,6 +187,8 @@ class FasterPlayer2:
 		Runs search on this thread and writes resulting values into returnDict.
 	"""
 	def getPlayInfo(self, state, tNum, returnDict):
+		_ = State(state.dims[0], state.dims[1]) #state helper might not have been passed to this thread...
+
 		returnDict[str(tNum) + "msg"] = ""
 		self.rollouts = 0
 		self.goto(state)
