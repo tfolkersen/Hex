@@ -31,13 +31,23 @@ def draw():
 	print("Game " + str(gameNumber) + " -- " + colors["p1"] + p1Name + colors["white"]\
 		+ " vs " + colors["p2"] + p2Name + colors["white"])
 	print("Wins: " + colors["p1"] + str(wins[0]) + colors["white"] +  "/" + colors["p2"] + str(wins[1]) + colors["white"])
+	print("Rollouts: " + colors["p1"] + str(players[0].rollouts) + colors["white"] + "/" + colors["p2"] + str(players[1].rollouts) + colors["white"])
+
+	print("P1 message: " + str(players[0].message))
+	print("P2 message: " + str(players[1].message))
 
 
 def makeRandomPlayer(playerNumber):
-	return RandomPlayer(playerNumber)
+	p = RandomPlayer(playerNumber)
+	p.rollouts = 0
+	p.message = ""
+	return p
 
 def makeHumanPlayer(playerNumber):
-	return HumanPlayer(playerNumber)
+	p = HumanPlayer(playerNumber)
+	p.rollouts = 0
+	p.message = ""
+	return p
 
 def makeFasterPlayer2(playerNumber):
 	p = FasterPlayer2(playerNumber)
