@@ -1,4 +1,0 @@
-BasicPlayer2 vs RandomPlayer: 99/1
-FasterPlayer2 vs BasicPlayer2: 74/26
-FasterPlayer3 vs FasterPlayer2: 46/54
-MT-FasterPlayer3 vs FasterPlayer3: 83/17

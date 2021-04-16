@@ -1,6 +1,6 @@
 """		main
 
-	Main program.
+	Run experiments and save data into text files.
 """
 
 
