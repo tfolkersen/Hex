@@ -1,1 +1,1 @@
-FasterPlayer3 vs BasicPlayer2: 60/40
+MT-FasterPlayer3 vs FasterPlayer3: 86/14

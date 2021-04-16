@@ -7,7 +7,7 @@
 import math
 import time
 from utils import nextPlayer, argmax
-from state import numberAfterMove
+from state import numberAfterMove, State
 
 import os
 import sys

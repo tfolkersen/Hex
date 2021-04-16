@@ -98,14 +98,14 @@ def makeMTPlayer3(playerNumber):
 
 
 #Parameters
-wdist = 6
-bdist = 6
+wdist = 7
+bdist = 7
 maxGames = 100
-timeLimit = 1.0
-p1Threads = 4
+timeLimit = 6.0
+p1Threads = 8
 p2Threads = 4
 
-player1Factory = makeRandomPlayer
+player1Factory = makeHumanPlayer
 player2Factory = makeMTPlayer2
 
 #Initialization

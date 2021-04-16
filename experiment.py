@@ -99,6 +99,7 @@ def makeMTPlayer3(playerNumber):
 
 experiments = [[makeBasicPlayer2, makeRandomPlayer], [makeFasterPlayer2, makeBasicPlayer2], [makeFasterPlayer3, makeFasterPlayer2], [makeMTPlayer3, makeFasterPlayer3]]
 experiments = [[makeFasterPlayer3, makeBasicPlayer2]]
+experiments = [[makeMTPlayer3, makeFasterPlayer3]]
 
 #Parameters
 wdist = 6
